@@ -1,23 +1,19 @@
 import jwt from 'jsonwebtoken'
-import asyncHandler from 'express-async-handler'
-import User from '../models/userModel.js'
+import asyncHandler from 'express-async-handler' //?
 
-import { IReqWithUserData } from '../types/interfaces.js'
+import User from '../models/userModel.js'
+import { type JwtPayload } from 'jsonwebtoken'
+import { type IReqWithUserData } from '../types/interfaces.js'
 
 const protect = asyncHandler(async (req: IReqWithUserData, res, next) => {
-  let token;
 
-  token = req.cookies.jwt;
+  let token = req.cookies.accessToken
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || '')
-
-      console.log('Decoded ', decoded)
-
-      // @ts-ignore
-      req.user = await User.findById(decoded.userId).select('-password')
-
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload
+      // attach userData
+      req.user = await User.findById(decoded.id).select('-password')
       next()
     } catch (error) {
       console.error(error)
