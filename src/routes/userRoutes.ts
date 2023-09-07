@@ -7,7 +7,7 @@ const router = express.Router()
 router.get('/', protect, UserController.getUsers)
 router.post('/register', UserController.registration)
 router.post('/login', UserController.login)
-router.get('/refresh', UserController.refresh)
+router.post('/refresh', UserController.refresh)
 router.post('/logout', UserController.logout)
 router
   .route('/profile')
