@@ -3,8 +3,9 @@ import bcrypt from 'bcryptjs'
 import * as uuid from 'uuid'
 
 import tokenService from './tokenService'
+import mailService from './mailService'
 import { UserDto } from '../dtos/userDto'
-import { credProps, userData, profileUpdateFields } from '../types'
+import { credProps, profileUpdateFields } from '../types'
 
 class UserService {
 
@@ -17,6 +18,7 @@ class UserService {
     const hashPassword = await bcrypt.hash(password, 7)
     const activationLink = uuid.v4()
     const user = await userModel.create({ name, email, password: hashPassword, activationLink })
+    await mailService.sendActivationEmail(email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
 
     const userDto = new UserDto(user)
     const tokens = tokenService.generateTokens({ ...userDto })
@@ -26,6 +28,17 @@ class UserService {
       ...tokens,
       user: userDto
     }
+  }
+
+  async activate(activationLink: string) {
+    const user = await userModel.findOne({ activationLink })
+
+    if (!user) {
+      throw new Error('Invalid activation link.')
+    }
+
+    user.isActivated = true
+    await user.save()
   }
 
   async login({ email, password }: credProps) {

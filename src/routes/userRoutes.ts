@@ -9,6 +9,7 @@ router.post('/register', UserController.registration)
 router.post('/login', UserController.login)
 router.post('/refresh', UserController.refresh)
 router.post('/logout', UserController.logout)
+router.get('/activate/:link', UserController.activate)
 router
   .route('/profile')
   .get(protect, UserController.getUserProfile)

@@ -22,6 +22,16 @@ class UserController {
     }
   }
 
+  async activate(req: Request, res: Response) {
+    try {
+      const { link } = req.params
+      await userService.activate(link)
+      return res.redirect(process.env.CLIENT_URL || '')
+    } catch (err) {
+      return res.status(409).send(err?.toString())
+    }
+  }
+
   async login(
     req: Request<object, object, CreateUserInput['body']>,
     res: Response) {
