@@ -14,8 +14,6 @@ class UserController {
     try {
       const { name, email, password } = req.body
       const userData = await userService.registration({ name, email, password })
-      res.cookie('refreshToken', userData.refreshToken, { maxAge: 2*60*60*1000, httpOnly: true })
-      res.cookie('accessToken', userData.accessToken, { maxAge: 4*60*60*1000, httpOnly: true })
       return res.json(userData)
     } catch (err) {
       return res.status(409).send(err?.toString())
