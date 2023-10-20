@@ -5,9 +5,8 @@ export interface IReqWithUserData extends Request {
   user?: JwtPayload
 }
 
-export interface IGameResults {
+export interface IResult {
   score: number
   favDiceValues: [number]
   stats: Object
-  userId: string
 }

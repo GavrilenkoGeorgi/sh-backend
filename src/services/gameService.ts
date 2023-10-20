@@ -1,11 +1,11 @@
 import userModel from '../models/userModel'
 import resultModel from '../models/resultModel'
-import { IGameResults } from '../types/interfaces'
+import { IResult } from '../types/interfaces'
 import { ResultDto } from '../dtos'
 
 class GameService {
 
-  async save(id: string, data: IGameResults) {
+  async save(id: string, data: IResult) {
 
     const user = await userModel.findByIdAndUpdate(id)
     if (!user) {

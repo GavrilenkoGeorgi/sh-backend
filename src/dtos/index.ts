@@ -1,4 +1,4 @@
-import { IGameResults } from '../types/interfaces'
+import { IResult } from '../types/interfaces'
 
 export class UserDto {
   name: string = ''
@@ -18,12 +18,10 @@ export class ResultDto {
   score: number = 0
   favDiceValues: [number] = [0]
   stats: Object = {}
-  userId: string = ''
 
-  constructor(model: IGameResults) {
+  constructor(model: IResult) {
     this.score = model.score
     this.favDiceValues = model.favDiceValues
     this.stats = model.stats
-    this.userId = model.userId
   }
 }
