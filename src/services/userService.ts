@@ -4,7 +4,7 @@ import * as uuid from 'uuid'
 
 import tokenService from './tokenService'
 import mailService from './mailService'
-import { UserDto } from '../dtos/userDto'
+import { UserDto } from '../dtos'
 import { credProps, profileUpdateFields } from '../types'
 
 class UserService {

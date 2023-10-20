@@ -16,7 +16,6 @@ export type profileUpdateFields = { //??
   password: string
 }
 
-
 export type tokenData = {
   _id: object,
   user: object,
@@ -32,5 +31,6 @@ export type userData = {
   updatedAt: string,
   __v: number,
   isActivated: string,
+  results: [],
   save: () => void
 }
