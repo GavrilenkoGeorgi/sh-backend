@@ -6,6 +6,7 @@ import cors from 'cors'
 import connectDB from './config/db'
 import { notFound, errorHandler } from './middleware/errorMiddleware'
 import userRoutes from './routes/userRoutes'
+import gameRoutes from './routes/gameRoutes'
 
 dotenv.config()
 const port = process.env.PORT || 5000
@@ -23,6 +24,7 @@ app.use(cors({
 }))
 
 app.use('/api/users', userRoutes)
+app.use('/api/game', gameRoutes)
 
 app.use(notFound)
 app.use(errorHandler)
