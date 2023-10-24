@@ -24,7 +24,7 @@ class UserController {
     try {
       const { link } = req.params
       await userService.activate(link)
-      return res.redirect(process.env.CLIENT_URL || '')
+      return res.redirect(`${process.env.CLIENT_URL}/login` || '')
     } catch (err) {
       return res.status(409).send(err?.toString())
     }
