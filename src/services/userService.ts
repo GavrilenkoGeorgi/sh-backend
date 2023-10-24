@@ -21,8 +21,6 @@ class UserService {
     await mailService.sendActivationEmail(email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
 
     const userDto = new UserDto(user)
-    const tokens = tokenService.generateTokens({ ...userDto })
-    await tokenService.saveToken(userDto.id, tokens.refreshToken)
 
     return { user: userDto }
   }
@@ -39,10 +37,14 @@ class UserService {
   }
 
   async login({ email, password }: credProps) {
-    const user = await userModel.findOne({ email }) as credProps
+    const user = await userModel.findOne({ email })
 
     if (!user) {
       throw new Error('User not found.')
+    }
+
+    if (!user.isActivated) {
+      throw new Error('User is not activated.')
     }
 
     const checkPassword = await bcrypt.compare(password, user.password)
