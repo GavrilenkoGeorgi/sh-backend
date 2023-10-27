@@ -34,3 +34,5 @@ export type userData = {
   results: [],
   save: () => void
 }
+
+export type Nullable<T> = T | null
