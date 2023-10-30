@@ -8,6 +8,7 @@ export interface IReqWithUserData extends Request {
 
 export interface IResult extends Document {
   score: number
+  schoolScore: number
   favDiceValues: [number]
   stats: Object
 }

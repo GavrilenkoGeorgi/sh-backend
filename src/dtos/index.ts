@@ -6,7 +6,7 @@ export class UserDto {
   id: string = ''
   isActivated: string = ''
 
-  constructor(model: any) { //?
+  constructor(model: any) { // !?
     this.name = model.name
     this.email = model.email
     this.id = model._id
@@ -16,11 +16,13 @@ export class UserDto {
 
 export class ResultDto {
   score: number = 0
+  schoolScore: number = 0
   favDiceValues: [number] = [0]
   stats: Object = {}
 
   constructor(model: IResult) {
     this.score = model.score
+    this.schoolScore = model.schoolScore
     this.favDiceValues = model.favDiceValues
     this.stats = model.stats
   }

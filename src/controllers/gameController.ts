@@ -18,21 +18,24 @@ class GameController {
     try {
       const data = await gameService.getResults(req.user?.id)
       const scores: number[] = []
+      const schoolScores: number[] = []
 
       data?.results.forEach((item) => {
-        // @ts-ignore /!
         scores.push(item.score)
+        schoolScores.push(item.schoolScore)
       })
 
-      const average = calculateAverage(scores)
+      const average = Math.floor(calculateAverage(scores))
       const percentFromMax = computePercentFromMax(average, 879) // max score?
       const stats = {
         games: data?.results.length,
         max: Math.max(...scores),
         average,
         percentFromMax,
+        schoolScores: schoolScores,
         scores: scores.slice(0, 50) // 50 is the max to show on chart
       }
+
       return res.json(stats)
 
     } catch (err) {
