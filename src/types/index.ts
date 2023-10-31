@@ -36,3 +36,15 @@ export type userData = {
 }
 
 export type Nullable<T> = T | null
+
+export enum GameCombinations { // combination names?
+  PAIR = 'pair',
+  TWOPAIRS = 'twoPairs',
+  TRIPLE = 'triple',
+  FULL = 'full',
+  QUADS = 'quads',
+  POKER = 'poker',
+  SMALL = 'small',
+  LARGE = 'large',
+  CHANCE = 'chance'
+}
