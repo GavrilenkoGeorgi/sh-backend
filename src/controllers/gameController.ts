@@ -20,6 +20,7 @@ class GameController {
     const scores: number[] = []
     const schoolScores: number[] = []
     let stats = emptyStats
+    let favDiceValues: number[] = new Array(6).fill(0)
 
     try {
       const data = await gameService.getResults(req.user?.id)
@@ -28,13 +29,14 @@ class GameController {
         scores.push(item.score)
         schoolScores.push(item.schoolScore)
 
-        for (const name in stats) {
-          const value = item.stats[name as keyof typeof stats]
-          stats[name as keyof typeof stats]
-            = stats[name as keyof typeof stats] + value
-        }
+        for (const name in stats)
+          stats[name as keyof typeof stats] += item.stats[name as keyof typeof stats]
+          item.favDiceValues.forEach((value, index) =>
+            favDiceValues[index] += value
+          )
 
-      })
+        }
+      )
 
       const average = Math.floor(calculateAverage(scores))
       const percentFromMax = computePercentFromMax(average, 879) // max score?
@@ -44,6 +46,7 @@ class GameController {
         max: Math.max(...scores),
         average,
         percentFromMax,
+        favDiceValues,
         stats,
         schoolScores: schoolScores,
         scores: scores.slice(0, 50) // 50 is the max to show on chart
