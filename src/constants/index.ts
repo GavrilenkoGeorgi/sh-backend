@@ -1,6 +1,6 @@
-import { ICombination } from '../types/interfaces'
+import { Stats, DiceStats } from '../types/interfaces'
 
-export const emptyStats: ICombination = {
+export const emptyStats: Stats = {
   pair: 0,
   twoPairs: 0,
   triple: 0,
@@ -10,4 +10,13 @@ export const emptyStats: ICombination = {
   small: 0,
   large: 0,
   chance: 0
+}
+
+export const emptyDiceStats: DiceStats = {
+  ones: 0,
+  twos: 0,
+  threes: 0,
+  fours: 0,
+  fives: 0,
+  sixes: 0
 }

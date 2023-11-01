@@ -48,3 +48,12 @@ export enum GameCombinations { // combination names?
   LARGE = 'large',
   CHANCE = 'chance'
 }
+
+export enum SchoolCombinations {
+  ONES = 'ones',
+  TWOS = 'twos',
+  THREES = 'threes',
+  FOURS = 'fours',
+  FIVES = 'fives',
+  SIXES = 'sixes'
+}

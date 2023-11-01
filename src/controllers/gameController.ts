@@ -1,8 +1,9 @@
 import { Response, NextFunction } from 'express'
 import gameService from '../services/gameService'
-import { IReqWithUserData } from '../types/interfaces'
+import { IReqWithUserData, ChartAxisData } from '../types/interfaces'
 import { calculateAverage, computePercentFromMax } from '../utils/stats'
-import { emptyStats } from '../constants'
+import { emptyStats, emptyDiceStats } from '../constants'
+import { v4 } from 'uuid'
 
 class GameController {
 
@@ -19,8 +20,10 @@ class GameController {
 
     const scores: number[] = []
     const schoolScores: number[] = []
+    let favComb: ChartAxisData[] = []
+    let favDiceValues: ChartAxisData[] = []
     let stats = emptyStats
-    let favDiceValues: number[] = new Array(6).fill(0)
+    let diceStats = emptyDiceStats
 
     try {
       const data = await gameService.getResults(req.user?.id)
@@ -31,12 +34,27 @@ class GameController {
 
         for (const name in stats)
           stats[name as keyof typeof stats] += item.stats[name as keyof typeof stats]
-          item.favDiceValues.forEach((value, index) =>
-            favDiceValues[index] += value
-          )
 
-        }
-      )
+        item.favDiceValues.forEach((value, index) => {
+          const name = Object.keys(diceStats)[index]
+          diceStats[name as keyof typeof diceStats] += value
+        })
+
+      })
+
+      for (const name in stats) {
+        favComb.push({
+          id: name,
+          value: stats[name as keyof typeof stats]
+        })
+      }
+
+      for (const name in diceStats) { // this clearly needs to be one thing
+        favDiceValues.push({
+          id: name,
+          value: diceStats[name as keyof typeof diceStats]
+        })
+      }
 
       const average = Math.floor(calculateAverage(scores))
       const percentFromMax = computePercentFromMax(average, 879) // max score?
@@ -47,9 +65,11 @@ class GameController {
         average,
         percentFromMax,
         favDiceValues,
-        stats,
-        schoolScores: schoolScores,
-        scores: scores.slice(0, 50) // 50 is the max to show on chart
+        favComb,
+        // schoolScores: schoolScores.slice(0, 50).map(score => ({ id: v4(), value: score })),
+        // scores: scores.slice(0, 50).map(score => ({ id: v4(), value: score }))
+        scores: [...schoolScores.slice(0, 50).map(score => ({ id: v4(), value: score })),
+          ...scores.slice(0, 50).map(score => ({ id: v4(), value: score }))]
       }
 
       return res.json(userStats)
@@ -57,8 +77,9 @@ class GameController {
     } catch (err) {
       next(err)
     } finally {
-      // clear stats /?
-      for (const name in stats) stats[name as keyof typeof stats] = 0
+      // clear stats or calc them on new result save
+      for (const name in stats) stats[name as keyof typeof stats] = 0 // ?
+      for (const name in diceStats) diceStats[name as keyof typeof diceStats] = 0 // !
     }
   }
 
