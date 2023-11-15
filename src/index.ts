@@ -3,6 +3,8 @@ import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 
+import session from 'express-session'
+
 import connectDB from './config/db'
 import { notFound, errorHandler } from './middleware/errorMiddleware'
 import userRoutes from './routes/userRoutes'
@@ -18,6 +20,19 @@ const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'sdfhs7dn45nasd',
+    resave: true,
+    saveUninitialized: false,
+    cookie: {
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // must be 'none' to enable cross-site delivery
+      secure: process.env.NODE_ENV === 'production', // must be true if sameSite='none'
+    }
+  })
+);
+
 app.use(cors({
   credentials: true,
   origin: process.env.CLIENT_URL
