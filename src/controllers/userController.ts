@@ -36,8 +36,9 @@ class UserController {
     try {
       const { name, email, password } = req.body
       const userData = await userService.login({ name, email, password })
-      res.cookie('refreshToken', userData.refreshToken, { maxAge: 2*60*60*1000, httpOnly: true })
-      res.cookie('accessToken', userData.accessToken, { maxAge: 4*60*60*1000, httpOnly: true })
+      res.cookie('refreshToken', userData.refreshToken, { maxAge: 8*60*60*1000, httpOnly: true, secure: true })
+      res.cookie('accessToken', userData.accessToken, { maxAge: 4*60*60*1000, httpOnly: true, secure: true })
+      res.cookie('testCookie', userData.accessToken, { maxAge: 4*60*60*1000 })
       return res.json(userData)
     } catch (err) {
       return res.status(409).send(err?.toString())
