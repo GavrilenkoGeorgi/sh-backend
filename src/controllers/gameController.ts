@@ -66,10 +66,8 @@ class GameController {
         percentFromMax,
         favDiceValues,
         favComb,
-        // schoolScores: schoolScores.slice(0, 50).map(score => ({ id: v4(), value: score })),
-        // scores: scores.slice(0, 50).map(score => ({ id: v4(), value: score }))
-        scores: [...schoolScores.slice(0, 50).map(score => ({ id: v4(), value: score })),
-          ...scores.slice(0, 50).map(score => ({ id: v4(), value: score }))]
+        schoolScores: schoolScores.slice(0, 50).map(score => ({ id: v4().substring(0, 3), value: score })),
+        scores: scores.slice(0, 50).map(score => ({ id: v4().substring(0, 3), value: score }))
       }
 
       return res.json(userStats)
