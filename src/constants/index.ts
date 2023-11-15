@@ -8,8 +8,7 @@ export const emptyStats: Stats = {
   quads: 0,
   poker: 0,
   small: 0,
-  large: 0,
-  chance: 0
+  large: 0
 }
 
 export const emptyDiceStats: DiceStats = {

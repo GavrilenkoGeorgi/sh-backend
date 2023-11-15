@@ -15,7 +15,6 @@ export interface Stats {
   poker: number
   small: number
   large: number
-  chance: number
 }
 
 export interface IResult extends Document {
