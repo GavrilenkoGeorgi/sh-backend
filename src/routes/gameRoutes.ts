@@ -5,6 +5,7 @@ import { protect } from '../middleware/authMiddleware'
 const router = express.Router()
 
 router.post('/save', protect, GameController.save)
-router.get('/results', protect, GameController.getResults)
+router.get('/stats', protect, GameController.getStats)
+router.get('/user-results', protect, GameController.getResults)
 
 export default router

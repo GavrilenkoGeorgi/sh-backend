@@ -21,8 +21,9 @@ class GameService {
   }
 
   async getResults(id: string) {
-    const results = userModel.findById(id).populate('results').select('results')
-    return results
+    return await userModel.findById(id)
+      .populate<{ results: IResult[] }>('results')
+      .select('results')
   }
 
 }
