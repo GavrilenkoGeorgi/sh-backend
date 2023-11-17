@@ -60,8 +60,8 @@ class UserController {
     try {
       const { refreshToken } = req.cookies
       const userData = await userService.refresh(refreshToken)
-      res.cookie('refreshToken', userData.refreshToken, { maxAge: 2*60*60*1000, httpOnly: true })
-      res.cookie('accessToken', userData.accessToken, { maxAge: 4*60*60*1000, httpOnly: true })
+      res.cookie('refreshToken', userData.refreshToken, { maxAge: 8*60*60*1000, httpOnly: true, sameSite: 'none', secure: true })
+      res.cookie('accessToken', userData.accessToken, { maxAge: 4*60*60*1000, httpOnly: true, sameSite: 'none', secure: true })
       return res.json(userData)
     } catch (err) {
       return res.status(422).send(err?.toString())
