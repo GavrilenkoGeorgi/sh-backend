@@ -28,6 +28,7 @@ class MailService {
         <div>
           <h1>Follow this link to activate your account:</h1>
           <a href="${link}">${link}</a>
+          You will be redirected to the login page.
         </div>
       `
     })
