@@ -4,6 +4,7 @@ import userService from '../services/userService'
 import { CreateUserInput } from '../schemas/user.schema'
 
 import type { IReqWithUserData } from '../types/interfaces'
+import { accessCookieMaxAge, refreshCookieMaxAge } from '../constants'
 
 class UserController {
 
@@ -36,8 +37,8 @@ class UserController {
     try {
       const { name, email, password } = req.body
       const userData = await userService.login({ name, email, password })
-      res.cookie('refreshToken', userData.refreshToken, { maxAge: 8*60*60*1000, httpOnly: true, sameSite: 'none', secure: true })
-      res.cookie('accessToken', userData.accessToken, { maxAge: 4*60*60*1000, httpOnly: true, sameSite: 'none', secure: true })
+      res.cookie('refreshToken', userData.refreshToken, { maxAge: refreshCookieMaxAge, httpOnly: true, sameSite: 'none', secure: true })
+      res.cookie('accessToken', userData.accessToken, { maxAge: accessCookieMaxAge, httpOnly: true, sameSite: 'none', secure: true })
       return res.json(userData)
     } catch (err) {
       return res.status(409).send(err?.toString())
@@ -60,8 +61,8 @@ class UserController {
     try {
       const { refreshToken } = req.cookies
       const userData = await userService.refresh(refreshToken)
-      res.cookie('refreshToken', userData.refreshToken, { maxAge: 8*60*60*1000, httpOnly: true, sameSite: 'none', secure: true })
-      res.cookie('accessToken', userData.accessToken, { maxAge: 4*60*60*1000, httpOnly: true, sameSite: 'none', secure: true })
+      res.cookie('refreshToken', userData.refreshToken, { maxAge: refreshCookieMaxAge, httpOnly: true, sameSite: 'none', secure: true })
+      res.cookie('accessToken', userData.accessToken, { maxAge: accessCookieMaxAge, httpOnly: true, sameSite: 'none', secure: true })
       return res.json(userData)
     } catch (err) {
       return res.status(422).send(err?.toString())
