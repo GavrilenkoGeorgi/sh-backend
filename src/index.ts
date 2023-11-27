@@ -3,8 +3,6 @@ import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 
-// import session from 'express-session'
-
 import connectDB from './config/db'
 import { notFound, errorHandler } from './middleware/errorMiddleware'
 import userRoutes from './routes/userRoutes'

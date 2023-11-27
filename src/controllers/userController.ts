@@ -11,29 +11,34 @@ class UserController {
   async registration(
     req: Request<object, object, CreateUserInput['body']>,
     res: Response,
+    next: NextFunction
   ) {
     try {
       const { name, email, password } = req.body
       const userData = await userService.registration({ name, email, password })
       return res.json(userData)
     } catch (err) {
-      return res.status(409).send(err?.toString())
+      res.status(409)
+      next(err)
     }
   }
 
-  async activate(req: Request, res: Response) {
+  async activate(req: Request, res: Response, next: NextFunction) {
     try {
       const { link } = req.params
       await userService.activate(link)
       return res.redirect(`${process.env.CLIENT_URL}/login` || '')
     } catch (err) {
-      return res.status(409).send(err?.toString())
+      res.status(409)
+      next(err)
     }
   }
 
   async login(
     req: Request<object, object, CreateUserInput['body']>,
-    res: Response) {
+    res: Response,
+    next: NextFunction
+    ) {
     try {
       const { name, email, password } = req.body
       const userData = await userService.login({ name, email, password })
@@ -41,7 +46,8 @@ class UserController {
       res.cookie('accessToken', userData.accessToken, { maxAge: accessCookieMaxAge, httpOnly: true, sameSite: 'none', secure: true })
       return res.json(userData)
     } catch (err) {
-      return res.status(409).send(err?.toString())
+      res.status(409)
+      next(err)
     }
   }
 
@@ -53,11 +59,12 @@ class UserController {
       res.clearCookie('accessToken')
       return res.json(token)
     } catch (err) {
+      res.status(409)
       next(err)
     }
   }
 
-  async refresh(req: Request, res: Response) {
+  async refresh(req: Request, res: Response, next: NextFunction) {
     try {
       const { refreshToken } = req.cookies
       const userData = await userService.refresh(refreshToken)
@@ -65,7 +72,8 @@ class UserController {
       res.cookie('accessToken', userData.accessToken, { maxAge: accessCookieMaxAge, httpOnly: true, sameSite: 'none', secure: true })
       return res.json(userData)
     } catch (err) {
-      return res.status(422).send(err?.toString())
+      res.status(409)
+      next(err)
     }
   }
 
