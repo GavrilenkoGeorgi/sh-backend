@@ -24,11 +24,13 @@ class GameController {
     let favDiceValues: ChartAxisData[] = []
     let stats = emptyStats
     let diceStats = emptyDiceStats
+    let ids: string[] = []
 
     try {
       const data = await gameService.getResults(req.user?.id)
 
       data?.results.forEach((item) => {
+        ids.push(item._id.getTimestamp())
         scores.push(item.score)
         schoolScores.push(item.schoolScore)
 
@@ -66,8 +68,14 @@ class GameController {
         percentFromMax,
         favDiceValues,
         favComb,
-        schoolScores: schoolScores.slice(0, 50).map(score => ({ id: v4().substring(0, 3), value: score })),
-        scores: scores.slice(0, 50).map(score => ({ id: v4().substring(0, 3), value: score }))
+        schoolScores: schoolScores.slice(0, 50).map((score, idx) => ({
+          id: ids[idx],
+          value: score
+        })),
+        scores: scores.slice(0, 50).map((score, idx) => ({
+          id: ids[idx],
+          value: score
+        }))
       }
 
       return res.json(userStats)
