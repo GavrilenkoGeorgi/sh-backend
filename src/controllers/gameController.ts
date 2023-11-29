@@ -3,7 +3,7 @@ import gameService from '../services/gameService'
 import { IReqWithUserData, ChartAxisData } from '../types/interfaces'
 import { calculateAverage, computePercentFromMax } from '../utils/stats'
 import { emptyStats, emptyDiceStats } from '../constants'
-import { v4 } from 'uuid'
+import { getPercent, getAxisValues } from '../utils/stats'
 
 class GameController {
 
@@ -61,13 +61,19 @@ class GameController {
       const average = Math.floor(calculateAverage(scores))
       const percentFromMax = computePercentFromMax(average, 879) // max score?
 
+      const diceValuePercent = getAxisValues(favDiceValues)
+        .map(getPercent(0, Math.max(...getAxisValues(favDiceValues))))
+
+      const combinationsPercent = getAxisValues(favComb)
+        .map(getPercent(0, Math.max(...getAxisValues(favComb))))
+
       const userStats = {
         games: data?.results.length,
         max: Math.max(...scores),
         average,
         percentFromMax,
-        favDiceValues,
-        favComb,
+        favDiceValues: favDiceValues.map((item, idx) => ({ ...item, value: Math.floor(diceValuePercent[idx]) })),
+        favComb: favComb.map((item, idx) => ({ ...item, value: Math.floor(combinationsPercent[idx]) })),
         schoolScores: schoolScores.slice(0, 50).map((score, idx) => ({
           id: ids[idx],
           value: score
