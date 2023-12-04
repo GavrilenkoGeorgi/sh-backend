@@ -2,7 +2,7 @@ import { Request } from 'express'
 import { JwtPayload } from 'jsonwebtoken'
 import { Document } from 'mongoose'
 
-export interface IReqWithUserData extends Request {
+export interface ReqWithUserData extends Request {
   user?: JwtPayload
 }
 

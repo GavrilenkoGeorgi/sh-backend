@@ -10,10 +10,9 @@ export type credProps = { //?
   password: string
 }
 
-export type profileUpdateFields = { //??
+export interface profileUpdateData {
   name: string,
-  email: string,
-  password: string
+  email: string
 }
 
 export type tokenData = {

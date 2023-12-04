@@ -1,22 +1,22 @@
 import { Response, NextFunction } from 'express'
 import gameService from '../services/gameService'
-import { IReqWithUserData, ChartAxisData } from '../types/interfaces'
+import { ReqWithUserData, ChartAxisData } from '../types/interfaces'
 import { calculateAverage, computePercentFromMax } from '../utils/stats'
 import { emptyStats, emptyDiceStats } from '../constants'
 import { getPercent, getAxisValues } from '../utils/stats'
 
 class GameController {
 
-  async save(req: IReqWithUserData, res: Response, next: NextFunction) {
+  async save(req: ReqWithUserData, res: Response, next: NextFunction) {
     try {
       await gameService.save(req.user?.id, req.body)
-      return res.status(200).end()
+      return res.send('Saved.')
     } catch (err) {
       next(err)
     }
   }
 
-  async getStats(req: IReqWithUserData, res: Response, next: NextFunction) {
+  async getStats(req: ReqWithUserData, res: Response, next: NextFunction) {
 
     const scores: number[] = []
     const schoolScores: number[] = []
@@ -95,7 +95,7 @@ class GameController {
     }
   }
 
-  async getResults(req: IReqWithUserData, res: Response, next: NextFunction) {
+  async getResults(req: ReqWithUserData, res: Response, next: NextFunction) {
     try {
       const data = await gameService.getResults(req.user?.id)
       return res.json(data)
