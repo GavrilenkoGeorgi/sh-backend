@@ -24,8 +24,8 @@ app.use(cors({
   origin: process.env.CLIENT_URL
 }))
 
-app.use('/api/users', userRoutes)
-app.use('/api/game', gameRoutes)
+app.use('/users', userRoutes)
+app.use('/game', gameRoutes)
 
 app.use(notFound)
 app.use(errorHandler)
