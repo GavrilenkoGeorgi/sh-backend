@@ -30,6 +30,7 @@ class UserService {
     }
 
     user.isActivated = true
+    user.activationLink = ''
     await user.save()
   }
 
@@ -46,7 +47,7 @@ class UserService {
 
     const checkPassword = await bcrypt.compare(password, user.password)
     if (!checkPassword) {
-      throw new Error('Password is incorrrect.')
+      throw new Error('Password is incorrect.')
     }
 
     const tokens = tokenService.generateTokens({
@@ -117,9 +118,41 @@ class UserService {
     return profile
   }
 
-  async resetPwd(id: string, password: string) {
-    const hashed = await bcrypt.hash(password, 7)
-    const user = await userModel.findOneAndUpdate({ _id: id }, { password: hashed })
+  async forgotPwd(email: string) {
+
+    const existingUser = await userModel.findOne({ email })
+    if (!existingUser) {
+      throw new Error('Something went wrong in the piping system.') // security reasons
+    }
+
+    const token = tokenService.generateRecoveryToken({ email })
+    await mailService.sendRecoveryEmail(
+      email,
+      `${process.env.CLIENT_URL}/forgotpwd?token=${token}`
+    )
+
+    await userModel.findOneAndUpdate({ email }, { passwordUpdateToken: token })
+
+    return `Recovery email sent to ${email}`
+  }
+
+  async updatePwd(password: string, token: string) {
+
+    const validToken = tokenService.validatePasswordToken(token)
+    if (!validToken) {
+      throw new Error('Invalid token.')
+    }
+
+    const user = await userModel.findOne({ passwordUpdateToken: token })
+    if (!user) {
+      throw new Error('Can\'t update, check token.')
+    }
+
+    const hashPassword = await bcrypt.hash(password, 2)
+    user.password = hashPassword
+    user.passwordUpdateToken = ''
+
+    await user.save()
     return user
   }
 

@@ -34,6 +34,10 @@ export type userData = {
   save: () => void
 }
 
+export type recoveryTokenData = {
+  email: string
+}
+
 export type Nullable<T> = T | null
 
 export enum GameCombinations { // combination names?

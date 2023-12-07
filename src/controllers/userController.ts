@@ -107,16 +107,28 @@ class UserController {
     }
   }
 
-  async resetPwd(
+  async forgotPwd(
+    req: Request,
+    res: Response,
+    next: NextFunction) {
+      try {
+        const { email } = req.body
+        await userService.forgotPwd(email)
+        return res.end()
+      } catch (err) {
+        res.status(400)
+        next(err)
+      }
+    }
+
+  async updatePwd(
     req: Request,
     res: Response,
     next: NextFunction) {
     try {
-      const { password } = req.body
-      const { user } = req as ReqWithUserData
-
-      await userService.resetPwd(user?.id, password)
-      return res.send(`Update ok. User id: ${user?.id}`)
+      const { password, token } = req.body
+      await userService.updatePwd(password, token)
+      return res.end()
     } catch (err) {
       res.status(400)
       next(err)
