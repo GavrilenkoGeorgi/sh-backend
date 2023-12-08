@@ -156,6 +156,12 @@ class UserService {
     return user
   }
 
+  async delete(id: string) {
+    if (!id) throw new Error('Check id.')
+    await userModel.findByIdAndDelete(id)
+    return `Deleted acc id: ${id}`
+  }
+
 }
 
 export default new UserService()

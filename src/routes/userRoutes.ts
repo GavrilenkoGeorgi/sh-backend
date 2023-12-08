@@ -18,6 +18,7 @@ router.get('/logout', UserController.logout)
 router.get('/activate/:link', UserController.activate)
 router.post('/forgotpwd', validate(ForgotPwdData), UserController.forgotPwd)
 router.put('/updatepwd', validate(PwdUpdData), UserController.updatePwd)
+router.delete('/delete', protect, UserController.delete)
 router
   .route('/profile')
   .get(protect, UserController.getUserProfile)
