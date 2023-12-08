@@ -6,6 +6,7 @@ const UserSchema = new Schema({
   password: {type: String, required: true},
   isActivated: {type: Boolean, default: false},
   activationLink: {type: String},
+  passwordUpdateToken: {type: String},
   results: [{ type: Schema.Types.ObjectId, ref: 'Result'}]
 })
 

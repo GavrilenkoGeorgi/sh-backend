@@ -4,12 +4,11 @@ import * as uuid from 'uuid'
 
 import tokenService from './tokenService'
 import mailService from './mailService'
-import { UserDto } from '../dtos'
-import { credProps, profileUpdateFields } from '../types'
+import { credProps, profileUpdateData } from '../types'
 
 class UserService {
 
-  async registration({ name, email, password, }: credProps) {
+  async registration({ name, email, password }: credProps) {
     const existingUser = await userModel.findOne({ email })
     if (existingUser) {
       throw new Error('User already exists.')
@@ -20,9 +19,7 @@ class UserService {
     const user = await userModel.create({ name, email, password: hashPassword, activationLink })
     await mailService.sendActivationEmail(email, `${process.env.API_URL}/users/activate/${activationLink}`)
 
-    const userDto = new UserDto(user)
-
-    return { user: userDto }
+    return user
   }
 
   async activate(activationLink: string) {
@@ -33,6 +30,7 @@ class UserService {
     }
 
     user.isActivated = true
+    user.activationLink = ''
     await user.save()
   }
 
@@ -49,13 +47,17 @@ class UserService {
 
     const checkPassword = await bcrypt.compare(password, user.password)
     if (!checkPassword) {
-      throw new Error('Password is incorrrect.')
+      throw new Error('Password is incorrect.')
     }
-    const userDto = new UserDto(user)
-    const tokens = tokenService.generateTokens({ ...userDto })
 
-    await tokenService.saveToken(userDto.id, tokens.refreshToken)
-    return { ...tokens, user: userDto }
+    const tokens = tokenService.generateTokens({
+      email: user.email,
+      id: user.id,
+      isActivated: user.isActivated.toString()
+    })
+
+    await tokenService.saveToken(user.id, tokens.refreshToken)
+    return { ...tokens, user }
   }
 
   async logout(refreshToken: string) {
@@ -76,13 +78,18 @@ class UserService {
     }
 
     const user = await userModel.findById(tokenFromDb.user?.toString())
-    const userDto = new UserDto(user)
-    const tokens = tokenService.generateTokens({ ...userDto })
-    await tokenService.saveToken(userDto.id, tokens.refreshToken)
+    if (user) {
+      const tokens = tokenService.generateTokens({
+        email: user.email,
+        id: user.id,
+        isActivated: user.isActivated.toString()
+      })
 
-    return {
-      ...tokens,
-      user: userDto
+      await tokenService.saveToken(user.id, tokens.refreshToken)
+
+      return { ...tokens, user }
+    } else {
+      throw new Error('Can\'t generate tokens.' )
     }
   }
 
@@ -96,13 +103,12 @@ class UserService {
     return user
   }
 
-  async updateUserProfile(id: string, userData: profileUpdateFields) {
+  async updateUserProfile(id: string, userData: profileUpdateData) {
 
     const filter = { _id: id }
     const update = {
       name: userData.name,
-      email: userData.email,
-      password: await bcrypt.hash(userData.password, 7)
+      email: userData.email
     }
 
     let profile = await userModel.findOneAndUpdate(filter, update, {
@@ -111,6 +117,45 @@ class UserService {
 
     return profile
   }
+
+  async forgotPwd(email: string) {
+
+    const existingUser = await userModel.findOne({ email })
+    if (!existingUser) {
+      throw new Error('Something went wrong in the piping system.') // security reasons
+    }
+
+    const token = tokenService.generateRecoveryToken({ email })
+    await mailService.sendRecoveryEmail(
+      email,
+      `${process.env.CLIENT_URL}/forgotpwd?token=${token}`
+    )
+
+    await userModel.findOneAndUpdate({ email }, { passwordUpdateToken: token })
+
+    return `Recovery email sent to ${email}`
+  }
+
+  async updatePwd(password: string, token: string) {
+
+    const validToken = tokenService.validatePasswordToken(token)
+    if (!validToken) {
+      throw new Error('Invalid token.')
+    }
+
+    const user = await userModel.findOne({ passwordUpdateToken: token })
+    if (!user) {
+      throw new Error('Can\'t update, check token.')
+    }
+
+    const hashPassword = await bcrypt.hash(password, 2)
+    user.password = hashPassword
+    user.passwordUpdateToken = ''
+
+    await user.save()
+    return user
+  }
+
 }
 
 export default new UserService()

@@ -10,10 +10,9 @@ export type credProps = { //?
   password: string
 }
 
-export type profileUpdateFields = { //??
+export interface profileUpdateData {
   name: string,
-  email: string,
-  password: string
+  email: string
 }
 
 export type tokenData = {
@@ -33,6 +32,10 @@ export type userData = {
   isActivated: string,
   results: [],
   save: () => void
+}
+
+export type recoveryTokenData = {
+  email: string
 }
 
 export type Nullable<T> = T | null

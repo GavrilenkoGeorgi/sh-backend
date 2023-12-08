@@ -3,9 +3,9 @@ import asyncHandler from 'express-async-handler' //?
 
 import User from '../models/userModel.js'
 import { type JwtPayload } from 'jsonwebtoken'
-import { type IReqWithUserData } from '../types/interfaces.js'
+import { type ReqWithUserData } from '../types/interfaces.js'
 
-const protect = asyncHandler(async (req: IReqWithUserData, res, next) => {
+const protect = asyncHandler(async (req: ReqWithUserData, res, next) => {
 
   let token = req.cookies.accessToken
 
@@ -16,13 +16,12 @@ const protect = asyncHandler(async (req: IReqWithUserData, res, next) => {
       req.user = await User.findById(decoded.id).select('-password')
       next()
     } catch (error) {
-      console.error(error)
       res.status(401)
-      throw new Error('Not authorized, token failed')
+      throw new Error('Not authorized, token failed.')
     }
   } else {
     res.status(401)
-    throw new Error('Not authorized, no token')
+    throw new Error('Not authorized, no token.')
   }
 })
 

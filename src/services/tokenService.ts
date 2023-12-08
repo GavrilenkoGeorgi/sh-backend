@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 
 import tokenModel from '../models/tokenModel'
-import { tokenPayload, tokenData } from '../types'
+import { tokenPayload, tokenData, recoveryTokenData } from '../types'
 
 class TokenService {
   generateTokens(payload: tokenPayload) {
@@ -14,22 +14,24 @@ class TokenService {
     }
   }
 
+  generateRecoveryToken(payload: recoveryTokenData) {
+    const recoveryToken = jwt.sign(payload, process.env.JWT_SECRET || '', { expiresIn: '1d' })
+    return recoveryToken
+  }
+
+  validatePasswordToken(token: string) {
+    const data = jwt.verify(token, process.env.JWT_SECRET || '')
+    return data
+  }
+
   validateAccessToken(token: string) {
-    try {
-      const userData = jwt.verify(token, process.env.JWT_SECRET || '')
-      return userData
-    } catch (err) {
-      return null
-    }
+    const userData = jwt.verify(token, process.env.JWT_SECRET || '')
+    return userData
   }
 
   validateRefreshToken(token: string) {
-    try {
-      const userData = jwt.verify(token, process.env.JWT_REFRESH || '')
-      return userData
-    } catch (err) {
-      return null
-    }
+    const userData = jwt.verify(token, process.env.JWT_REFRESH || '')
+    return userData
   }
 
   async saveToken(userId: string, refreshToken: string) {

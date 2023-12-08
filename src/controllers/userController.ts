@@ -1,15 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
 import userService from '../services/userService'
 
-import { CreateUserInput } from '../schemas/user.schema'
-
-import type { IReqWithUserData } from '../types/interfaces'
+import type { ReqWithUserData } from '../types/interfaces'
 import { accessCookieMaxAge, refreshCookieMaxAge } from '../constants'
 
 class UserController {
 
   async registration(
-    req: Request<object, object, CreateUserInput['body']>,
+    req: Request,
     res: Response,
     next: NextFunction
   ) {
@@ -35,7 +33,7 @@ class UserController {
   }
 
   async login(
-    req: Request<object, object, CreateUserInput['body']>,
+    req: Request,
     res: Response,
     next: NextFunction
     ) {
@@ -86,10 +84,9 @@ class UserController {
     }
   }
 
-  async getUserProfile(req: IReqWithUserData, res: Response, next: NextFunction) {
+  async getUserProfile(req: ReqWithUserData, res: Response, next: NextFunction) {
     try {
-      console.log(req.user?.id)
-      const user = await userService.getUserProfile(req?.user?.id as string)
+      const user = await userService.getUserProfile(req?.user?.id)
       return res.json(user)
     } catch (err) {
       next(err)
@@ -97,15 +94,43 @@ class UserController {
   }
 
   async updateUserProfile(
-    req: Request<object, object, CreateUserInput['body']>,
+    req: Request,
     res: Response,
     next: NextFunction) {
     try {
-      const userData: IReqWithUserData = req as IReqWithUserData //?
-      const { name, email, password } = req.body
-      const user = await userService.updateUserProfile(userData.user?.id as string, { name, email, password })
+      const userData = req as ReqWithUserData
+      const { name, email } = req.body
+      const user = await userService.updateUserProfile(userData.user?.id, { name, email })
       return res.json(user)
     } catch (err) {
+      next(err)
+    }
+  }
+
+  async forgotPwd(
+    req: Request,
+    res: Response,
+    next: NextFunction) {
+      try {
+        const { email } = req.body
+        await userService.forgotPwd(email)
+        return res.end()
+      } catch (err) {
+        res.status(400)
+        next(err)
+      }
+    }
+
+  async updatePwd(
+    req: Request,
+    res: Response,
+    next: NextFunction) {
+    try {
+      const { password, token } = req.body
+      await userService.updatePwd(password, token)
+      return res.end()
+    } catch (err) {
+      res.status(400)
       next(err)
     }
   }
