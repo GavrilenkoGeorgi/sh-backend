@@ -23,6 +23,17 @@ class GameService {
       .select('results')
   }
 
+  async clearStats(id: string) {
+    const user = await userModel.findById(id)
+    if (user != null) {
+      for (let id of user.results) {
+        await resultModel.findOneAndRemove(id)
+      }
+      user.results = []
+      await user.save()
+    }
+  }
+
 }
 
 export default new GameService()

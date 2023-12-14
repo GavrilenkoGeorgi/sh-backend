@@ -104,6 +104,15 @@ class GameController {
     }
   }
 
+  async clearStats(req: ReqWithUserData, res: Response, next: NextFunction) {
+    try {
+      await gameService.clearStats(req.user?.id)
+      return res.end()
+    } catch (err) {
+      next(err)
+    }
+  }
+
 }
 
 export default new GameController()
