@@ -9,5 +9,6 @@ const router = express.Router()
 router.post('/save', [protect, validate(newResultData)], GameController.save)
 router.get('/stats', protect, GameController.getStats)
 router.get('/user-results', protect, GameController.getResults)
+router.delete('/clearstats', protect, GameController.clearStats)
 
 export default router
