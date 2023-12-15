@@ -17,7 +17,7 @@ export interface Stats {
   large: number
 }
 
-export interface IResult extends Document {
+export interface Result extends Document {
   score: number
   schoolScore: number
   favDiceValues: [number]
@@ -36,4 +36,15 @@ export interface DiceStats {
   fours: number
   fives: number
   sixes: number
+}
+
+export interface UserStats {
+  games: number
+  max?: number
+  average?: number
+  percentFromMax?: number
+  favDiceValues?: ChartAxisData[]
+  favComb?: ChartAxisData[]
+  schoolScores?: ChartAxisData[]
+  scores?: ChartAxisData[]
 }

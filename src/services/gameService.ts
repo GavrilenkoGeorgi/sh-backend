@@ -1,10 +1,11 @@
 import userModel from '../models/userModel'
 import resultModel from '../models/resultModel'
-import { IResult } from '../types/interfaces'
+import { Result } from '../types/interfaces'
+import { compileStats } from '../utils/stats'
 
 class GameService {
 
-  async save(id: string, data: IResult) {
+  async save(id: string, data: Result) {
     const user = await userModel.findByIdAndUpdate(id)
     if (!user) {
       throw new Error('Can\'t save, no user with this id.')
@@ -19,8 +20,15 @@ class GameService {
 
   async getResults(id: string) {
     return await userModel.findById(id)
-      .populate<{ results: IResult[] }>('results')
+      .populate<{ results: Result[] }>('results')
       .select('results')
+  }
+
+  async getStats(id: string) {
+    const data = await userModel.findById(id)
+      .populate<{ results: Result[] }>('results')
+      .select('results')
+    return data && compileStats(data.results)
   }
 
   async clearStats(id: string) {
