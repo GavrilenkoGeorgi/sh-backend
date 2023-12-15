@@ -10,7 +10,6 @@ import { profileUpdateData } from '../schemas/profileSchema'
 
 const router = express.Router()
 
-router.get('/', protect, UserController.getUsers) //?
 router.post('/register', validate(newUserData), UserController.registration)
 router.post('/login', validate(loginData), UserController.login)
 router.post('/refresh', UserController.refresh)
