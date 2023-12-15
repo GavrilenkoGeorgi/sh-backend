@@ -1,7 +1,6 @@
 import { ChartAxisData, Result, Stats, DiceStats } from '../types/interfaces'
 import { emptyStats, emptyDiceStats } from '../constants'
 
-
 export const calculateAverage = (array: number[]) => {
   var total = 0;
   var count = 0;
@@ -80,13 +79,11 @@ export const compileStats = (results: Result[]) => {
     return arr
   }
 
-  const compileLineChartAxisData = (data: any, ids: any) => {
-    data.slice(0, 50).map((score: number, idx: string) => ({
+  const compileLineChartAxisData = (data: number[], ids: string[]) => {
+    return data.slice(0, 50).map((score: number, idx: number) => ({
       id: ids[idx],
       value: score
     }))
-
-    return data
   }
 
   const average = Math.floor(calculateAverage(scores))

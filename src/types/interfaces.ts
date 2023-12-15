@@ -40,11 +40,11 @@ export interface DiceStats {
 
 export interface UserStats {
   games: number
-  max?: number
-  average?: number
-  percentFromMax?: number
-  favDiceValues?: ChartAxisData[]
-  favComb?: ChartAxisData[]
-  schoolScores?: ChartAxisData[]
-  scores?: ChartAxisData[]
+  max: number
+  average: number
+  percentFromMax: number
+  favDiceValues: ChartAxisData[]
+  favComb: ChartAxisData[]
+  schoolScores: ChartAxisData[]
+  scores: ChartAxisData[]
 }
