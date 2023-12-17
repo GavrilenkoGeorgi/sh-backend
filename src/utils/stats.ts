@@ -43,8 +43,6 @@ export const compileStats = (results: Result[]) => {
 
   const scores: number[] = []
   const schoolScores: number[] = []
-  let favComb: ChartAxisData[] = []
-  let favDiceValues: ChartAxisData[] = []
   let stats = emptyStats
   let diceStats = emptyDiceStats
   let ids: string[] = []
@@ -69,16 +67,6 @@ export const compileStats = (results: Result[]) => {
 
   })
 
-  const compileBarChartAxisData = (arr: ChartAxisData[], data: Stats | DiceStats) => {
-    for (const name in data) {
-      arr.push({
-        id: name,
-        value: data[name as keyof typeof data]
-      })
-    }
-    return arr
-  }
-
   const compileLineChartAxisData = (data: number[], ids: string[]) => {
     return data.slice(0, 50).map((score: number, idx: number) => ({
       id: ids[idx],
@@ -86,26 +74,38 @@ export const compileStats = (results: Result[]) => {
     }))
   }
 
+  const compileBarChartAxisData = (data: Stats | DiceStats) => {
+
+    const axisData: ChartAxisData[] = []
+    const values: number[] = []
+
+    // get values into array
+    for (const name in data) {
+      values.push(data[name as keyof typeof data])
+    }
+
+    const sample = getPercent(0, Math.max(...values))
+
+    for (const name in data) {
+      axisData.push({
+        id: name,
+        value: Math.floor(sample(data[name as keyof typeof data]))
+      })
+
+    }
+    return axisData
+  }
+
   const average = Math.floor(calculateAverage(scores))
   const percentFromMax = computePercentFromMax(average, 879) // max score
-
-  const diceValuePercent = getAxisValues(favDiceValues)
-    .map(getPercent(0, Math.max(...getAxisValues(favDiceValues))))
-  const combinationsPercent = getAxisValues(favComb)
-    .map(getPercent(0, Math.max(...getAxisValues(favComb))))
-
-  compileBarChartAxisData(favComb, stats)
-    .map((item, idx) => ({ ...item, value: Math.floor(combinationsPercent[idx]) }))
-  compileBarChartAxisData(favDiceValues, diceStats)
-    .map((item, idx) => ({ ...item, value: Math.floor(diceValuePercent[idx]) }))
 
   const userStats = {
     games: results.length,
     max: Math.max(...scores),
     average,
     percentFromMax,
-    favDiceValues,
-    favComb,
+    favDiceValues: compileBarChartAxisData(diceStats),
+    favComb: compileBarChartAxisData(stats),
     schoolScores: compileLineChartAxisData(schoolScores, ids),
     scores: compileLineChartAxisData(scores, ids)
   }
