@@ -16,11 +16,14 @@ router.post('/refresh', UserController.refresh)
 router.get('/logout', UserController.logout)
 router.get('/activate/:link', UserController.activate)
 router.post('/forgotpwd', validate(ForgotPwdData), UserController.forgotPwd)
-router.put('/updatepwd', validate(PwdUpdData), UserController.updatePwd)
+router.put('/updatepwd', validate(PwdUpdData), UserController.updatePwd) // TODO: check if POST is needed because of cors
 router.delete('/delete', protect, UserController.delete)
 router
   .route('/profile')
   .get(protect, UserController.getUserProfile)
-  .put([protect, validate(profileUpdateData)], UserController.updateUserProfile)
+  .post(
+    [protect, validate(profileUpdateData)],
+    UserController.updateUserProfile
+  )
 
 export default router

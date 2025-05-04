@@ -19,10 +19,14 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
-app.use(cors({
-  credentials: true,
-  origin: process.env.CLIENT_URL
-}))
+app.use(
+  cors({
+    credentials: true,
+    origin: process.env.CLIENT_URL,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+)
 
 app.use('/users', userRoutes)
 app.use('/game', gameRoutes)
