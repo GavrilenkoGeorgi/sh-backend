@@ -1,5 +1,7 @@
 import { Stats, DiceStats } from '../types/interfaces'
 
+export const SALT_ROUNDS: number = 7
+
 export const emptyStats: Stats = {
   pair: 0,
   twoPairs: 0,

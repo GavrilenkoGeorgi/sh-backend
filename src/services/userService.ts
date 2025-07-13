@@ -6,6 +6,7 @@ import tokenService from './tokenService'
 import mailService from './mailService'
 import { credProps, profileUpdateData } from '../types'
 import { buildUserUrl, USER_ROUTES } from '../constants/routes'
+import { SALT_ROUNDS } from '../constants'
 
 class UserService {
   async registration({ name, email, password }: credProps) {
@@ -14,7 +15,7 @@ class UserService {
       throw new Error('User already exists.')
     }
 
-    const hashPassword = await bcrypt.hash(password, 7)
+    const hashPassword = await bcrypt.hash(password, SALT_ROUNDS)
     const activationLink = uuid.v4()
     const user = await userModel.create({
       name,
@@ -157,7 +158,7 @@ class UserService {
       throw new Error("Can't update, check token.")
     }
 
-    const hashPassword = await bcrypt.hash(password, 2)
+    const hashPassword = await bcrypt.hash(password, SALT_ROUNDS)
     user.password = hashPassword
     user.passwordUpdateToken = ''
 
