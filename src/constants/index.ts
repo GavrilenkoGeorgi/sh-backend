@@ -1,5 +1,7 @@
 import { Stats, DiceStats } from '../types/interfaces'
 
+export const SALT_ROUNDS: number = 7
+
 export const emptyStats: Stats = {
   pair: 0,
   twoPairs: 0,
@@ -8,7 +10,7 @@ export const emptyStats: Stats = {
   quads: 0,
   poker: 0,
   small: 0,
-  large: 0
+  large: 0,
 }
 
 export const emptyDiceStats: DiceStats = {
@@ -17,8 +19,11 @@ export const emptyDiceStats: DiceStats = {
   threes: 0,
   fours: 0,
   fives: 0,
-  sixes: 0
+  sixes: 0,
 }
 
-export const accessCookieMaxAge: number = 24*60*60*1000 // 24 hours
-export const refreshCookieMaxAge: number = 72*60*60*1000 // 72 hours
+export const accessCookieMaxAge: number = 24 * 60 * 60 * 1000 // 24 hours
+export const refreshCookieMaxAge: number = 72 * 60 * 60 * 1000 // 72 hours
+
+// re-export route constants
+export * from './routes'

@@ -5,19 +5,30 @@ import * as uuid from 'uuid'
 import tokenService from './tokenService'
 import mailService from './mailService'
 import { credProps, profileUpdateData } from '../types'
+import { buildUserUrl, USER_ROUTES } from '../constants/routes'
+import { SALT_ROUNDS } from '../constants'
 
 class UserService {
-
   async registration({ name, email, password }: credProps) {
     const existingUser = await userModel.findOne({ email })
     if (existingUser) {
       throw new Error('User already exists.')
     }
 
-    const hashPassword = await bcrypt.hash(password, 7)
+    const hashPassword = await bcrypt.hash(password, SALT_ROUNDS)
     const activationLink = uuid.v4()
-    const user = await userModel.create({ name, email, password: hashPassword, activationLink })
-    await mailService.sendActivationEmail(email, `${process.env.API_URL}/users/activate/${activationLink}`)
+    const user = await userModel.create({
+      name,
+      email,
+      password: hashPassword,
+      activationLink,
+    })
+    await mailService.sendActivationEmail(
+      email,
+      `${process.env.API_URL}${buildUserUrl(USER_ROUTES.ACTIVATE, {
+        link: activationLink,
+      })}`
+    )
 
     return user
   }
@@ -53,7 +64,7 @@ class UserService {
     const tokens = tokenService.generateTokens({
       email: user.email,
       id: user.id,
-      isActivated: user.isActivated.toString()
+      isActivated: user.isActivated.toString(),
     })
 
     await tokenService.saveToken(user.id, tokens.refreshToken)
@@ -82,14 +93,14 @@ class UserService {
       const tokens = tokenService.generateTokens({
         email: user.email,
         id: user.id,
-        isActivated: user.isActivated.toString()
+        isActivated: user.isActivated.toString(),
       })
 
       await tokenService.saveToken(user.id, tokens.refreshToken)
 
       return { ...tokens, user }
     } else {
-      throw new Error('Can\'t generate tokens.' )
+      throw new Error("Can't generate tokens.")
     }
   }
 
@@ -104,22 +115,22 @@ class UserService {
   }
 
   async updateUserProfile(id: string, userData: profileUpdateData) {
-
     const filter = { _id: id }
     const update = {
       name: userData.name,
-      email: userData.email
+      email: userData.email,
     }
 
-    let profile = await userModel.findOneAndUpdate(filter, update, {
-      returnOriginal: false
-    }).select('-password')
+    let profile = await userModel
+      .findOneAndUpdate(filter, update, {
+        returnOriginal: false,
+      })
+      .select('-password')
 
     return profile
   }
 
   async forgotPwd(email: string) {
-
     const existingUser = await userModel.findOne({ email })
     if (!existingUser) {
       throw new Error('Something went wrong in the piping system.') // security reasons
@@ -137,7 +148,6 @@ class UserService {
   }
 
   async updatePwd(password: string, token: string) {
-
     const validToken = tokenService.validatePasswordToken(token)
     if (!validToken) {
       throw new Error('Invalid token.')
@@ -145,10 +155,10 @@ class UserService {
 
     const user = await userModel.findOne({ passwordUpdateToken: token })
     if (!user) {
-      throw new Error('Can\'t update, check token.')
+      throw new Error("Can't update, check token.")
     }
 
-    const hashPassword = await bcrypt.hash(password, 2)
+    const hashPassword = await bcrypt.hash(password, SALT_ROUNDS)
     user.password = hashPassword
     user.passwordUpdateToken = ''
 
@@ -161,7 +171,6 @@ class UserService {
     await userModel.findOneAndRemove({ _id: id })
     return `Deleted acc id: ${id}`
   }
-
 }
 
 export default new UserService()

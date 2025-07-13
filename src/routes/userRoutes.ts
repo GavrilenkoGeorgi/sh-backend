@@ -7,19 +7,32 @@ import { ForgotPwdData } from '../schemas/forgotPwd.schema'
 import { newUserData } from '../schemas/user.schema'
 import { loginData } from '../schemas/loginSchema'
 import { profileUpdateData } from '../schemas/profileSchema'
+import { USER_ROUTES } from '../constants/routes'
 
 const router = express.Router()
 
-router.post('/register', validate(newUserData), UserController.registration)
-router.post('/login', validate(loginData), UserController.login)
-router.post('/refresh', UserController.refresh)
-router.get('/logout', UserController.logout)
-router.get('/activate/:link', UserController.activate)
-router.post('/forgotpwd', validate(ForgotPwdData), UserController.forgotPwd)
-router.put('/updatepwd', validate(PwdUpdData), UserController.updatePwd) // TODO: check if POST is needed because of cors
-router.delete('/delete', protect, UserController.delete)
+router.post(
+  USER_ROUTES.REGISTER,
+  validate(newUserData),
+  UserController.registration
+)
+router.post(USER_ROUTES.LOGIN, validate(loginData), UserController.login)
+router.post(USER_ROUTES.REFRESH, UserController.refresh)
+router.get(USER_ROUTES.LOGOUT, UserController.logout)
+router.get(USER_ROUTES.ACTIVATE, UserController.activate)
+router.post(
+  USER_ROUTES.FORGOT_PASSWORD,
+  validate(ForgotPwdData),
+  UserController.forgotPwd
+)
+router.put(
+  USER_ROUTES.UPDATE_PASSWORD,
+  validate(PwdUpdData),
+  UserController.updatePwd
+) // TODO: check if POST is needed because of cors
+router.delete(USER_ROUTES.DELETE, protect, UserController.delete)
 router
-  .route('/profile')
+  .route(USER_ROUTES.PROFILE)
   .get(protect, UserController.getUserProfile)
   .post(
     [protect, validate(profileUpdateData)],

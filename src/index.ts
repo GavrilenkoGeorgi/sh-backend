@@ -7,6 +7,7 @@ import connectDB from './config/db'
 import { notFound, errorHandler } from './middleware/errorMiddleware'
 import userRoutes from './routes/userRoutes'
 import gameRoutes from './routes/gameRoutes'
+import { API_BASE_PATHS } from './constants/routes'
 
 dotenv.config()
 const port = process.env.PORT || 5000
@@ -28,8 +29,8 @@ app.use(
   })
 )
 
-app.use('/users', userRoutes)
-app.use('/game', gameRoutes)
+app.use(API_BASE_PATHS.USERS, userRoutes)
+app.use(API_BASE_PATHS.GAME, gameRoutes)
 
 app.use(notFound)
 app.use(errorHandler)
