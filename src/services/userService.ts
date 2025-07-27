@@ -85,7 +85,7 @@ class UserService {
     const tokenFromDb = await tokenService.findToken(refreshToken)
 
     if (!userData || !tokenFromDb) {
-      throw new Error('Unauthorised.')
+      throw new Error('Unauthorised. Token is missing or invalid.')
     }
 
     const user = await userModel.findById(tokenFromDb.user?.toString())
