@@ -136,15 +136,32 @@ class UserService {
       throw new Error('Something went wrong in the piping system.') // security reasons
     }
 
-    const token = tokenService.generateRecoveryToken({ email })
-    await mailService.sendRecoveryEmail(
-      email,
-      `${process.env.CLIENT_URL}/forgotpwd?token=${token}`
-    )
+    try {
+      const token = tokenService.generateRecoveryToken({ email })
+      await mailService.sendRecoveryEmail(
+        email,
+        `${process.env.CLIENT_URL}/forgotpwd?token=${token}`
+      )
 
-    await userModel.findOneAndUpdate({ email }, { passwordUpdateToken: token })
+      await userModel.findOneAndUpdate(
+        { email },
+        { passwordUpdateToken: token }
+      )
 
-    return `Recovery email sent to ${email}`
+      return `Recovery email sent to ${email}`
+    } catch (error) {
+      console.error('Error in forgotPwd:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+
+      if (errorMessage.includes('Username and Password not accepted')) {
+        throw new Error(
+          'Email service is temporarily unavailable. Please contact support.'
+        )
+      }
+
+      throw new Error('Failed to send recovery email. Please try again later.')
+    }
   }
 
   async updatePwd(password: string, token: string) {
