@@ -1,5 +1,7 @@
-import express from 'express'
 import dotenv from 'dotenv'
+dotenv.config()
+
+import express from 'express'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 
@@ -9,11 +11,8 @@ import userRoutes from './routes/userRoutes'
 import gameRoutes from './routes/gameRoutes'
 import { API_BASE_PATHS } from './constants/routes'
 
-dotenv.config()
 const port = process.env.PORT || 5000
-
 connectDB()
-
 const app = express()
 
 app.use(express.json())
