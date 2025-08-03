@@ -7,7 +7,7 @@
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q -r dotenv/config build/index.js\"",
     "build": "npx tsc",
     "start": "node build/index.js",
-    "test-email": "npm run build && node -r dotenv/config build/checkSmtpCreds.js",
+    "test-email": "npm run build && node -r dotenv/config build/utils/checkSmtpCreds.js",
     "version:patch": "npm version patch",
     "version:minor": "npm version minor",
     "version:major": "npm version major"
