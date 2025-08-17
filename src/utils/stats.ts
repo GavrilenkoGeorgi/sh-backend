@@ -1,13 +1,14 @@
 import { ChartAxisData, Result, Stats, DiceStats } from '../types/interfaces'
 import { emptyStats, emptyDiceStats } from '../constants'
+import { takeLastMapped } from './index'
 
 export const calculateAverage = (array: number[]) => {
-  var total = 0;
-  var count = 0;
+  var total = 0
+  var count = 0
 
   array.forEach((item) => {
-      total += item
-      count++
+    total += item
+    count++
   })
 
   return total / count
@@ -19,28 +20,31 @@ export const calculateAverage = (array: number[]) => {
 /* @return {integer}                 User percent from max
 /*                                   possible score
 */
-export const computePercentFromMax = (averageScore: number, maxPossibleScore: number) => {
-  let result = Math.floor(averageScore / maxPossibleScore * 100)
+export const computePercentFromMax = (
+  averageScore: number,
+  maxPossibleScore: number
+) => {
+  let result = Math.floor((averageScore / maxPossibleScore) * 100)
   return result
 }
 
 /*
 /* Convert to percent array of numbers
 */
-export const getPercent = (min: number, max: number) => (value: number) => 100 * (value - min) / (max - min)
+export const getPercent = (min: number, max: number) => (value: number) =>
+  (100 * (value - min)) / (max - min)
 
 /*
 /* Get axis values as integer array
 */
 export const getAxisValues = (arr: ChartAxisData[]) => {
-  return arr.map(item => item.value)
+  return arr.map((item) => item.value)
 }
 
 /*
 /* Compile user stats object
 */
 export const compileStats = (results: Result[]) => {
-
   const scores: number[] = []
   const schoolScores: number[] = []
   let stats = emptyStats
@@ -58,24 +62,20 @@ export const compileStats = (results: Result[]) => {
     schoolScores.push(item.schoolScore)
 
     for (const name in stats)
-      stats[name as keyof typeof stats] += item.stats[name as keyof typeof stats]
+      stats[name as keyof typeof stats] +=
+        item.stats[name as keyof typeof stats]
 
     item.favDiceValues.forEach((value, index) => {
       const name = Object.keys(diceStats)[index]
       diceStats[name as keyof typeof diceStats] += value
     })
-
   })
 
   const compileLineChartAxisData = (data: number[], ids: string[]) => {
-    return data.slice(0, 50).map((score: number, idx: number) => ({
-      id: ids[idx],
-      value: score
-    }))
+    return takeLastMapped(data, ids, 50)
   }
 
   const compileBarChartAxisData = (data: Stats | DiceStats) => {
-
     const axisData: ChartAxisData[] = []
     const values: number[] = []
 
@@ -89,9 +89,8 @@ export const compileStats = (results: Result[]) => {
     for (const name in data) {
       axisData.push({
         id: name,
-        value: Math.floor(sample(data[name as keyof typeof data]))
+        value: Math.floor(sample(data[name as keyof typeof data])),
       })
-
     }
     return axisData
   }
@@ -107,7 +106,7 @@ export const compileStats = (results: Result[]) => {
     favDiceValues: compileBarChartAxisData(diceStats),
     favComb: compileBarChartAxisData(stats),
     schoolScores: compileLineChartAxisData(schoolScores, ids),
-    scores: compileLineChartAxisData(scores, ids)
+    scores: compileLineChartAxisData(scores, ids),
   }
 
   return userStats
