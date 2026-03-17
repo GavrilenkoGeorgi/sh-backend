@@ -27,7 +27,7 @@ class UserService {
       email,
       `${process.env.API_URL}${buildUserUrl(USER_ROUTES.ACTIVATE, {
         link: activationLink,
-      })}`
+      })}`,
     )
 
     return user
@@ -140,12 +140,12 @@ class UserService {
       const token = tokenService.generateRecoveryToken({ email })
       await mailService.sendRecoveryEmail(
         email,
-        `${process.env.CLIENT_URL}/forgotpwd?token=${token}`
+        `${process.env.CLIENT_URL}/forgotpwd?token=${token}`,
       )
 
       await userModel.findOneAndUpdate(
         { email },
-        { passwordUpdateToken: token }
+        { passwordUpdateToken: token },
       )
 
       return `Recovery email sent to ${email}`
@@ -156,7 +156,7 @@ class UserService {
 
       if (errorMessage.includes('Username and Password not accepted')) {
         throw new Error(
-          'Email service is temporarily unavailable. Please contact support.'
+          'Email service is temporarily unavailable. Please contact support.',
         )
       }
 
@@ -187,6 +187,21 @@ class UserService {
     if (!id) throw new Error('Check id.')
     await userModel.findOneAndRemove({ _id: id })
     return `Deleted acc id: ${id}`
+  }
+
+  async checkAuthStatus(token: string) {
+    if (!token) {
+      throw new Error('Invalid refresh token.')
+    }
+
+    const { id } = tokenService.validateAccessToken(token)
+    const user = await userModel.findById(id)
+
+    if (user) {
+      return { isAuthenticated: true, user }
+    } else {
+      throw new Error('Unauthorised. User not found.')
+    }
   }
 }
 
