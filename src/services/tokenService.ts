@@ -5,17 +5,23 @@ import { tokenPayload, tokenData, recoveryTokenData } from '../types'
 
 class TokenService {
   generateTokens(payload: tokenPayload) {
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET || '', { expiresIn: '7d' })
-    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH || '', { expiresIn: '14d' })
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET || '', {
+      expiresIn: '7d',
+    })
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH || '', {
+      expiresIn: '14d',
+    })
 
     return {
       accessToken,
-      refreshToken
+      refreshToken,
     }
   }
 
   generateRecoveryToken(payload: recoveryTokenData) {
-    const recoveryToken = jwt.sign(payload, process.env.JWT_SECRET || '', { expiresIn: '1d' })
+    const recoveryToken = jwt.sign(payload, process.env.JWT_SECRET || '', {
+      expiresIn: '1d',
+    })
     return recoveryToken
   }
 
@@ -24,8 +30,11 @@ class TokenService {
     return data
   }
 
-  validateAccessToken(token: string) {
-    const userData = jwt.verify(token, process.env.JWT_SECRET || '')
+  validateAccessToken(token: string): jwt.JwtPayload {
+    const userData = jwt.verify(
+      token,
+      process.env.JWT_SECRET || '',
+    ) as jwt.JwtPayload
     return userData
   }
 
@@ -35,7 +44,7 @@ class TokenService {
   }
 
   async saveToken(userId: string, refreshToken: string) {
-    const tokenData = await tokenModel.findOne({ user: userId }) as tokenData
+    const tokenData = (await tokenModel.findOne({ user: userId })) as tokenData
     if (tokenData) {
       tokenData.refreshToken = refreshToken
       return tokenData.save()

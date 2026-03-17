@@ -2,6 +2,7 @@
 export const USER_ROUTES = {
   REGISTER: '/register',
   LOGIN: '/login',
+  AUTH_STATUS: '/status',
   REFRESH: '/refresh',
   LOGOUT: '/logout',
   ACTIVATE: '/activate/:link',
@@ -28,7 +29,7 @@ export const API_BASE_PATHS = {
 export const buildApiUrl = (
   basePath: string,
   route: string,
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): string => {
   let url = `${basePath}${route}`
 
@@ -43,14 +44,14 @@ export const buildApiUrl = (
 
 export const buildUserUrl = (
   route: string,
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): string => {
   return buildApiUrl(API_BASE_PATHS.USERS, route, params)
 }
 
 export const buildGameUrl = (
   route: string,
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): string => {
   return buildApiUrl(API_BASE_PATHS.GAME, route, params)
 }

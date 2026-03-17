@@ -14,21 +14,22 @@ const router = express.Router()
 router.post(
   USER_ROUTES.REGISTER,
   validate(newUserData),
-  UserController.registration
+  UserController.registration,
 )
 router.post(USER_ROUTES.LOGIN, validate(loginData), UserController.login)
 router.post(USER_ROUTES.REFRESH, UserController.refresh)
+router.get(USER_ROUTES.AUTH_STATUS, protect, UserController.checkAuthStatus)
 router.get(USER_ROUTES.LOGOUT, UserController.logout)
 router.get(USER_ROUTES.ACTIVATE, UserController.activate)
 router.post(
   USER_ROUTES.FORGOT_PASSWORD,
   validate(ForgotPwdData),
-  UserController.forgotPwd
+  UserController.forgotPwd,
 )
 router.put(
   USER_ROUTES.UPDATE_PASSWORD,
   validate(PwdUpdData),
-  UserController.updatePwd
+  UserController.updatePwd,
 ) // TODO: check if POST is needed because of cors
 router.delete(USER_ROUTES.DELETE, protect, UserController.delete)
 router
@@ -36,7 +37,7 @@ router
   .get(protect, UserController.getUserProfile)
   .post(
     [protect, validate(profileUpdateData)],
-    UserController.updateUserProfile
+    UserController.updateUserProfile,
   )
 
 export default router
