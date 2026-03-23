@@ -4,12 +4,13 @@ import * as uuid from 'uuid'
 
 import tokenService from './tokenService'
 import mailService from './mailService'
-import { credProps, profileUpdateData } from '../types'
+import { LoginCreds, profileUpdateData } from '../types'
 import { buildUserUrl, USER_ROUTES } from '../constants/routes'
 import { SALT_ROUNDS } from '../constants'
+import { USER_SAFE_FIELDS } from '../constants/db'
 
 class UserService {
-  async registration({ name, email, password }: credProps) {
+  async registration({ name, email, password }: LoginCreds) {
     const existingUser = await userModel.findOne({ email })
     if (existingUser) {
       throw new Error('User already exists.')
@@ -45,30 +46,31 @@ class UserService {
     await user.save()
   }
 
-  async login({ email, password }: credProps) {
+  async login({ email, password }: LoginCreds) {
     const user = await userModel.findOne({ email })
 
     if (!user) {
-      throw new Error('User not found.')
+      throw new Error("Can't login, check creds.")
     }
 
     if (!user.isActivated) {
-      throw new Error('User is not activated.')
+      throw new Error('Check activation status.')
     }
 
     const checkPassword = await bcrypt.compare(password, user.password)
     if (!checkPassword) {
-      throw new Error('Password is incorrect.')
+      throw new Error("Can't login, check creds.")
     }
 
     const tokens = tokenService.generateTokens({
       email: user.email,
       id: user.id,
-      isActivated: user.isActivated.toString(),
+      isActivated: user.isActivated,
     })
 
     await tokenService.saveToken(user.id, tokens.refreshToken)
-    return { ...tokens, user }
+    const safeUser = await userModel.findById(user.id).select(USER_SAFE_FIELDS)
+    return { ...tokens, user: safeUser }
   }
 
   async logout(refreshToken: string) {
@@ -77,31 +79,33 @@ class UserService {
   }
 
   async refresh(refreshToken: string) {
-    if (!refreshToken) {
-      throw new Error('Invalid refresh token.')
+    const payload = tokenService.validateRefreshToken(refreshToken)
+    if (!payload) {
+      throw new Error('Refresh token invalid or expired.')
     }
 
-    const userData = tokenService.validateRefreshToken(refreshToken)
-    const tokenFromDb = await tokenService.findToken(refreshToken)
-
-    if (!userData || !tokenFromDb) {
-      throw new Error('Unauthorised. Token is missing or invalid.')
+    const tokenRecord = await tokenService.findToken(refreshToken)
+    if (!tokenRecord) {
+      throw new Error('Refresh token not found in storage.')
     }
 
-    const user = await userModel.findById(tokenFromDb.user?.toString())
-    if (user) {
-      const tokens = tokenService.generateTokens({
-        email: user.email,
-        id: user.id,
-        isActivated: user.isActivated.toString(),
-      })
-
-      await tokenService.saveToken(user.id, tokens.refreshToken)
-
-      return { ...tokens, user }
-    } else {
-      throw new Error("Can't generate tokens.")
+    const user = await userModel
+      .findById(tokenRecord.user)
+      .select(USER_SAFE_FIELDS)
+    if (!user) {
+      await tokenService.removeToken(refreshToken)
+      throw new Error('User not found.')
     }
+
+    const tokens = tokenService.generateTokens({
+      email: user.email,
+      id: user.id,
+      isActivated: user.isActivated,
+    })
+
+    await tokenService.saveToken(user.id, tokens.refreshToken)
+
+    return { ...tokens, user }
   }
 
   async getAllUsers() {
@@ -110,7 +114,7 @@ class UserService {
   }
 
   async getUserProfile(id: string) {
-    const user = await userModel.findById(id).select('-password')
+    const user = await userModel.findById(id).select(USER_SAFE_FIELDS)
     return user
   }
 
@@ -125,7 +129,7 @@ class UserService {
       .findOneAndUpdate(filter, update, {
         returnOriginal: false,
       })
-      .select('-password')
+      .select(USER_SAFE_FIELDS)
 
     return profile
   }
@@ -195,7 +199,7 @@ class UserService {
     }
 
     const { id } = tokenService.validateAccessToken(token)
-    const user = await userModel.findById(id)
+    const user = await userModel.findById(id).select(USER_SAFE_FIELDS)
 
     if (user) {
       return { isAuthenticated: true, user }

@@ -4,14 +4,16 @@ import userService from '../services/userService'
 import type { ReqWithUserData } from '../types/interfaces'
 import { accessCookieMaxAge, refreshCookieMaxAge } from '../constants'
 
+const isProd = process.env.NODE_ENV === 'production'
+
 const cookieOptions: {
   httpOnly: boolean
   sameSite: 'none' | 'lax' | 'strict'
   secure: boolean
 } = {
   httpOnly: true,
-  sameSite: 'none',
-  secure: true,
+  sameSite: isProd ? 'none' : 'lax',
+  secure: isProd,
 }
 
 class UserController {
@@ -28,9 +30,13 @@ class UserController {
 
   async activate(req: Request, res: Response, next: NextFunction) {
     try {
+      const url = process.env.CLIENT_URL
+      if (!url) {
+        throw new Error('CLIENT_URL is not defined')
+      }
       const { link } = req.params
       await userService.activate(link)
-      return res.redirect(`${process.env.CLIENT_URL}/login` || '')
+      return res.redirect(`${process.env.CLIENT_URL}/login`)
     } catch (err) {
       res.status(409)
       next(err)
@@ -39,8 +45,8 @@ class UserController {
 
   async login(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, email, password } = req.body
-      const userData = await userService.login({ name, email, password })
+      const { email, password } = req.body
+      const userData = await userService.login({ email, password })
       res.cookie('refreshToken', userData.refreshToken, {
         maxAge: refreshCookieMaxAge,
         ...cookieOptions,
@@ -58,32 +64,40 @@ class UserController {
 
   async logout(req: Request, res: Response, next: NextFunction) {
     try {
-      const { refreshToken } = req.cookies
-      const token = await userService.logout(refreshToken)
+      const refreshToken = req.cookies?.refreshToken
+      if (refreshToken) {
+        await userService.logout(refreshToken)
+      }
+
       res.clearCookie('refreshToken', cookieOptions)
       res.clearCookie('accessToken', cookieOptions)
-      return res.json(token)
+      return res.sendStatus(204)
     } catch (err) {
-      res.status(409)
       next(err)
     }
   }
 
   async refresh(req: Request, res: Response, next: NextFunction) {
     try {
-      const { refreshToken } = req.cookies
+      const refreshToken = req.cookies?.refreshToken
+      if (!refreshToken) {
+        return res.status(401).json({ message: 'Refresh token missing.' })
+      }
+
       const userData = await userService.refresh(refreshToken)
+
       res.cookie('refreshToken', userData.refreshToken, {
         maxAge: refreshCookieMaxAge,
         ...cookieOptions,
       })
+
       res.cookie('accessToken', userData.accessToken, {
         maxAge: accessCookieMaxAge,
         ...cookieOptions,
       })
+
       return res.json(userData)
     } catch (err) {
-      res.status(409)
       next(err)
     }
   }
@@ -114,6 +128,9 @@ class UserController {
     next: NextFunction,
   ) {
     try {
+      if (!req.user?.id) {
+        return res.sendStatus(401)
+      }
       const user = await userService.getUserProfile(req?.user?.id)
       return res.json(user)
     } catch (err) {
@@ -124,6 +141,9 @@ class UserController {
   async updateUserProfile(req: Request, res: Response, next: NextFunction) {
     try {
       const userData = req as ReqWithUserData
+      if (!userData.user?.id) {
+        return res.sendStatus(401)
+      }
       const { name, email } = req.body
       const user = await userService.updateUserProfile(userData.user?.id, {
         name,
