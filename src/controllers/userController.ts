@@ -55,7 +55,9 @@ class UserController {
         maxAge: accessCookieMaxAge,
         ...cookieOptions,
       })
-      return res.json(userData)
+      // TODO: remove access and refresh tokens from response body
+      const { refreshToken, accessToken, ...userDataWithoutTokens } = userData
+      return res.json(userDataWithoutTokens.user)
     } catch (err) {
       res.status(409)
       next(err)
