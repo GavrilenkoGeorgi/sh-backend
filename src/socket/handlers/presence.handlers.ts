@@ -1,6 +1,24 @@
 import { Server, type Socket } from 'socket.io'
 
-// presence handler skeleton — full implementation in Phase 2
+import { type SocketUser } from '../../modules/multiplayer/types/multiplayer.types'
+import { presenceService } from '../services/presence.service'
+
 export function registerPresenceHandlers(io: Server, socket: Socket): void {
-  // will track online users and broadcast presence:online-users
+  const authenticatedUser = socket.data.user as SocketUser
+
+  // every authenticated connection updates the global online users snapshot
+  presenceService.addConnection({
+    userId: authenticatedUser.id,
+    username: authenticatedUser.username,
+    socketId: socket.id,
+  })
+  presenceService.broadcastOnlineUsers(io)
+
+  socket.on('disconnect', () => {
+    presenceService.removeConnection({
+      userId: authenticatedUser.id,
+      socketId: socket.id,
+    })
+    presenceService.broadcastOnlineUsers(io)
+  })
 }

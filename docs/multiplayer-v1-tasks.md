@@ -69,7 +69,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 1 only. Add a multiplayer socket client, a dedicated React Redux store, and listeners for connection status and `presence:online-users`. Do not implement invite UI yet.
+> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 3 only. Add a multiplayer socket client, a dedicated React Redux store, and listeners for connection status and `presence:online-users`. Do not implement invite UI yet.
 
 ---
 
@@ -88,7 +88,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 2 only. Build the online users list UI and connect it to the multiplayer React Redux store. Add an Invite button for each other online user.
+> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 4 only. Build the online users list UI and connect it to the multiplayer React Redux store. Add an Invite button for each other online user.
 
 ---
 
@@ -111,7 +111,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 3 only. Add invite persistence and Socket.IO invite events for send/accept/decline. Validate online status and prevent duplicate pending invites.
+> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 5 only. Add invite persistence and Socket.IO invite events for send/accept/decline. Validate online status and prevent duplicate pending invites.
 
 ---
 
@@ -131,7 +131,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 3 only. Add UI for incoming invites with Accept and Decline actions. Emit the corresponding socket events and update the multiplayer store.
+> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 6 only. Add UI for incoming invites with Accept and Decline actions. Emit the corresponding socket events and update the multiplayer store.
 
 ---
 
@@ -153,7 +153,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 4 only. Create a multiplayer game when an invite is accepted, join both players to the game room, set the invited user to start first, and emit `game:started`.
+> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 7 only. Create a multiplayer game when an invite is accepted, join both players to the game room, set the invited user to start first, and emit `game:started`.
 
 ---
 
@@ -174,7 +174,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 4 only. Build the multiplayer game board UI that renders the shared game state, shows turn ownership, and distinguishes active-player and waiting-player views.
+> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 8 only. Build the multiplayer game board UI that renders the shared game state, shows turn ownership, and distinguishes active-player and waiting-player views.
 
 ---
 
@@ -193,7 +193,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 5 only. Add local turn state for dice, selected dice, category selection, and preview score. Keep this state separate from the shared multiplayer game snapshot.
+> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 9 only. Add local turn state for dice, selected dice, category selection, and preview score. Keep this state separate from the shared multiplayer game snapshot.
 
 ---
 
@@ -219,7 +219,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 5 only. Add `game:submit-turn` validation and turn application logic. Validate turn ownership, category legality, dice shape, and score range. Update the game state and emit `game:state-updated`.
+> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 10 only. Add `game:submit-turn` validation and turn application logic. Validate turn ownership, category legality, dice shape, and score range. Update the game state and emit `game:state-updated`.
 
 ---
 
@@ -239,7 +239,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 6 only. Reuse the existing local scoring logic, add a Submit Turn action, and send a finalized move to `game:submit-turn`. Reset local turn state after success.
+> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 11 only. Reuse the existing local scoring logic, add a Submit Turn action, and send a finalized move to `game:submit-turn`. Reset local turn state after success.
 
 ---
 
@@ -259,7 +259,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 6 only. Detect game completion, compute the winner, persist the result, and emit `game:ended`.
+> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 12 only. Detect game completion, compute the winner, persist the result, and emit `game:ended`.
 
 ---
 
@@ -279,7 +279,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 7 only. Handle `game:ended`, show the result, clear multiplayer session state, and return to the lobby.
+> Read `/docs/multiplayer-v1-spec.md` and implement Frontend Phase 13 only. Handle `game:ended`, show the result, clear multiplayer session state, and return to the lobby.
 
 ---
 
@@ -298,7 +298,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 7 only. If a player disconnects during an active game, end the game immediately and notify the remaining player with `game:ended`.
+> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 14 only. If a player disconnects during an active game, end the game immediately and notify the remaining player with `game:ended`.
 
 ---
 
@@ -316,7 +316,7 @@ This checklist follows `/docs/multiplayer-v1-spec.md`.
 
 ### Copilot prompt
 
-> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 8 only. Add minimal bootstrap endpoints for online users and optionally the current active game. Keep real-time updates socket-driven.
+> Read `/docs/multiplayer-v1-spec.md` and implement Backend Phase 15 only. Add minimal bootstrap endpoints for online users and optionally the current active game. Keep real-time updates socket-driven.
 
 ---
 
