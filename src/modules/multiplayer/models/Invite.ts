@@ -34,4 +34,7 @@ InviteSchema.index(
 // fast lookup for pending invites targeting a specific user
 InviteSchema.index({ toUserId: 1, status: 1 })
 
+// fast lookup for pending invites sent by a specific user
+InviteSchema.index({ fromUserId: 1, status: 1 })
+
 export default model<InviteDocument>('Invite', InviteSchema)

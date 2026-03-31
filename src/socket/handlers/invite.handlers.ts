@@ -9,13 +9,19 @@ export function registerInviteHandlers(io: Server, socket: Socket): void {
 
   socket.on('invite:send', async (payload, callback) => {
     try {
-      const { toUserId } = payload ?? {}
-      if (!toUserId || typeof toUserId !== 'string') {
-        return typeof callback === 'function'
-          ? callback({ error: 'Invalid payload: toUserId is required' })
-          : undefined
+      const toUserId =
+        typeof payload?.toUserId === 'string' ? payload.toUserId.trim() : ''
+
+      if (!toUserId) {
+        return emitActionError(
+          socket,
+          callback,
+          'invite:send',
+          'Invalid payload: toUserId is required',
+        )
       }
 
+      // sendInvite persists the invite in MongoDB before returning
       const inviteReceived = await inviteService.sendInvite(
         authenticatedUser.id,
         toUserId,
@@ -23,6 +29,7 @@ export function registerInviteHandlers(io: Server, socket: Socket): void {
 
       // deliver invite:received to all of the target user's active sockets
       const targetSocketIds = presenceService.getSocketIdsByUserId(toUserId)
+
       for (const socketId of targetSocketIds) {
         io.to(socketId).emit('invite:received', inviteReceived)
       }
@@ -33,19 +40,22 @@ export function registerInviteHandlers(io: Server, socket: Socket): void {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to send invite'
-      if (typeof callback === 'function') {
-        callback({ error: message })
-      }
+      emitActionError(socket, callback, 'invite:send', message)
     }
   })
 
   socket.on('invite:accept', async (payload, callback) => {
     try {
-      const { inviteId } = payload ?? {}
-      if (!inviteId || typeof inviteId !== 'string') {
-        return typeof callback === 'function'
-          ? callback({ error: 'Invalid payload: inviteId is required' })
-          : undefined
+      const inviteId =
+        typeof payload?.inviteId === 'string' ? payload.inviteId.trim() : ''
+
+      if (!inviteId) {
+        return emitActionError(
+          socket,
+          callback,
+          'invite:accept',
+          'Invalid payload: inviteId is required',
+        )
       }
 
       const result = await inviteService.acceptInvite(
@@ -58,6 +68,7 @@ export function registerInviteHandlers(io: Server, socket: Socket): void {
         status: result.status,
       }
 
+      // acceptInvite updates the DB before this status event is emitted
       // notify both users on all their active sockets
       emitToUser(io, result.fromUserId, 'invite:status', statusPayload)
       emitToUser(io, result.toUserId, 'invite:status', statusPayload)
@@ -70,19 +81,22 @@ export function registerInviteHandlers(io: Server, socket: Socket): void {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to accept invite'
-      if (typeof callback === 'function') {
-        callback({ error: message })
-      }
+      emitActionError(socket, callback, 'invite:accept', message)
     }
   })
 
   socket.on('invite:decline', async (payload, callback) => {
     try {
-      const { inviteId } = payload ?? {}
-      if (!inviteId || typeof inviteId !== 'string') {
-        return typeof callback === 'function'
-          ? callback({ error: 'Invalid payload: inviteId is required' })
-          : undefined
+      const inviteId =
+        typeof payload?.inviteId === 'string' ? payload.inviteId.trim() : ''
+
+      if (!inviteId) {
+        return emitActionError(
+          socket,
+          callback,
+          'invite:decline',
+          'Invalid payload: inviteId is required',
+        )
       }
 
       const result = await inviteService.declineInvite(
@@ -95,6 +109,7 @@ export function registerInviteHandlers(io: Server, socket: Socket): void {
         status: result.status,
       }
 
+      // declineInvite updates the DB before this status event is emitted
       // notify both users on all their active sockets
       emitToUser(io, result.fromUserId, 'invite:status', statusPayload)
       emitToUser(io, result.toUserId, 'invite:status', statusPayload)
@@ -105,9 +120,7 @@ export function registerInviteHandlers(io: Server, socket: Socket): void {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to decline invite'
-      if (typeof callback === 'function') {
-        callback({ error: message })
-      }
+      emitActionError(socket, callback, 'invite:decline', message)
     }
   })
 }
@@ -123,4 +136,21 @@ function emitToUser(
   for (const socketId of socketIds) {
     io.to(socketId).emit(event, payload)
   }
+}
+
+function emitActionError(
+  socket: Socket,
+  callback: unknown,
+  action: 'invite:send' | 'invite:accept' | 'invite:decline',
+  message: string,
+): void {
+  if (typeof callback === 'function') {
+    callback({ error: message })
+  }
+
+  // non-ack clients (for example Postman) can still observe why the action failed
+  socket.emit('invite:error', {
+    action,
+    message,
+  })
 }

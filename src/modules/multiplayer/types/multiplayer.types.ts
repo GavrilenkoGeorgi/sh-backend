@@ -47,3 +47,9 @@ export interface InviteStatusPayload {
   inviteId: string
   status: 'accepted' | 'declined' | 'cancelled' | 'expired'
 }
+
+// rest bootstrap payloads
+export interface OutgoingInvitePayload {
+  inviteId: string
+  toUser: BasicUser
+}

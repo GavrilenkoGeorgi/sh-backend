@@ -17,15 +17,15 @@ export function initializeSocket(httpServer: HttpServer): Server {
 
   io.use(socketAuth)
 
-  // TODO: remove after testing is complete
   io.on('connection', (socket) => {
     registerPresenceHandlers(io, socket)
     registerInviteHandlers(io, socket)
+
+    // TODO: remove after testing is complete
     socket.emit('debug:connected', {
       socketId: socket.id,
       userId: socket.data.user.id,
     })
-
     socket.on('debug:ping', (payload) => {
       socket.emit('debug:pong', {
         received: payload,

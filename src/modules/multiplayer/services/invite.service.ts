@@ -5,6 +5,7 @@ import { presenceService } from '../../../socket/services/presence.service'
 import type {
   BasicUser,
   InviteReceivedPayload,
+  OutgoingInvitePayload,
   InviteStatusPayload,
 } from '../types/multiplayer.types'
 
@@ -26,7 +27,6 @@ class InviteService {
       throw new Error('Target user is not online')
     }
 
-    // prevent duplicate pending invites between the same pair in either direction
     const existingPendingInvite = await Invite.findOne({
       status: 'pending',
       $or: [
@@ -42,14 +42,13 @@ class InviteService {
     const invite = await Invite.create({ fromUserId, toUserId })
 
     const senderUser = await User.findById(fromUserId).select('name')
-    const fromUser: BasicUser = {
-      id: fromUserId,
-      username: senderUser?.name ?? 'Unknown',
-    }
 
     return {
       inviteId: invite._id.toString(),
-      fromUser,
+      fromUser: {
+        id: fromUserId,
+        username: senderUser?.name ?? 'Unknown',
+      },
     }
   }
 
@@ -95,6 +94,7 @@ class InviteService {
     decliningUserId: string,
   ): Promise<InviteStatusPayload & { fromUserId: string; toUserId: string }> {
     const invite = await Invite.findById(inviteId)
+
     if (!invite) {
       throw new Error('Invite not found')
     }
@@ -116,6 +116,72 @@ class InviteService {
       fromUserId: invite.fromUserId,
       toUserId: invite.toUserId,
     }
+  }
+
+  async getIncomingPendingInvites(
+    userId: string,
+  ): Promise<InviteReceivedPayload[]> {
+    const incomingInvites = await Invite.find({
+      toUserId: userId,
+      status: 'pending',
+    })
+      .select('_id fromUserId createdAt')
+      .sort({ createdAt: -1 })
+
+    const fromUserIds = Array.from(
+      new Set(incomingInvites.map((invite) => invite.fromUserId)),
+    )
+
+    const usernamesByUserId = await this.getUsernamesByUserIds(fromUserIds)
+
+    return incomingInvites.map((invite) => ({
+      inviteId: invite._id.toString(),
+      fromUser: {
+        id: invite.fromUserId,
+        username: usernamesByUserId.get(invite.fromUserId) ?? 'Unknown',
+      },
+    }))
+  }
+
+  async getOutgoingPendingInvites(
+    userId: string,
+  ): Promise<OutgoingInvitePayload[]> {
+    const outgoingInvites = await Invite.find({
+      fromUserId: userId,
+      status: 'pending',
+    })
+      .select('_id toUserId createdAt')
+      .sort({ createdAt: -1 })
+
+    const toUserIds = Array.from(
+      new Set(outgoingInvites.map((invite) => invite.toUserId)),
+    )
+
+    const usernamesByUserId = await this.getUsernamesByUserIds(toUserIds)
+
+    return outgoingInvites.map((invite) => ({
+      inviteId: invite._id.toString(),
+      toUser: {
+        id: invite.toUserId,
+        username: usernamesByUserId.get(invite.toUserId) ?? 'Unknown',
+      },
+    }))
+  }
+
+  private async getUsernamesByUserIds(
+    userIds: string[],
+  ): Promise<Map<string, string>> {
+    if (userIds.length === 0) {
+      return new Map<string, string>()
+    }
+
+    const users = await User.find({ _id: { $in: userIds } })
+      .select('name')
+      .lean()
+
+    return new Map<string, string>(
+      users.map((user) => [user._id.toString(), user.name]),
+    )
   }
 }
 
