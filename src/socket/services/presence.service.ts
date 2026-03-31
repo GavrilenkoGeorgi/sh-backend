@@ -53,6 +53,16 @@ class PresenceService {
       )
   }
 
+  isUserOnline(userId: string): boolean {
+    const sockets = this.socketsByUserId.get(userId)
+    return sockets !== undefined && sockets.size > 0
+  }
+
+  getSocketIdsByUserId(userId: string): string[] {
+    const sockets = this.socketsByUserId.get(userId)
+    return sockets ? Array.from(sockets) : []
+  }
+
   broadcastOnlineUsers(io: Server): void {
     io.emit('presence:online-users', {
       users: this.getOnlineUsers(),

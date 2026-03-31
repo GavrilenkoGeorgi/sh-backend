@@ -15,3 +15,35 @@ export interface SocketUser {
   id: string
   username: string
 }
+
+// invite statuses
+export type InviteStatus =
+  | 'pending'
+  | 'accepted'
+  | 'declined'
+  | 'cancelled'
+  | 'expired'
+
+// client -> server payloads
+export interface InviteSendPayload {
+  toUserId: string
+}
+
+export interface InviteAcceptPayload {
+  inviteId: string
+}
+
+export interface InviteDeclinePayload {
+  inviteId: string
+}
+
+// server -> client payloads
+export interface InviteReceivedPayload {
+  inviteId: string
+  fromUser: BasicUser
+}
+
+export interface InviteStatusPayload {
+  inviteId: string
+  status: 'accepted' | 'declined' | 'cancelled' | 'expired'
+}

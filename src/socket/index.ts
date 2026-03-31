@@ -3,6 +3,7 @@ import { Server } from 'socket.io'
 
 import { socketAuth } from './auth'
 import { registerPresenceHandlers } from './handlers/presence.handlers'
+import { registerInviteHandlers } from './handlers/invite.handlers'
 
 let io: Server
 
@@ -19,6 +20,7 @@ export function initializeSocket(httpServer: HttpServer): Server {
   // TODO: remove after testing is complete
   io.on('connection', (socket) => {
     registerPresenceHandlers(io, socket)
+    registerInviteHandlers(io, socket)
     socket.emit('debug:connected', {
       socketId: socket.id,
       userId: socket.data.user.id,
