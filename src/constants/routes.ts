@@ -19,10 +19,16 @@ export const GAME_ROUTES = {
   CLEAR_STATS: '/clearstats',
 } as const
 
+export const MULTIPLAYER_ROUTES = {
+  INCOMING_INVITES: '/invites/incoming',
+  OUTGOING_INVITES: '/invites/outgoing',
+} as const
+
 // Base API paths
 export const API_BASE_PATHS = {
   USERS: '/users',
   GAME: '/game',
+  MULTIPLAYER: '/multiplayer',
 } as const
 
 // Helper functions for URL construction
@@ -54,4 +60,11 @@ export const buildGameUrl = (
   params?: Record<string, string>,
 ): string => {
   return buildApiUrl(API_BASE_PATHS.GAME, route, params)
+}
+
+export const buildMultiplayerUrl = (
+  route: string,
+  params?: Record<string, string>,
+): string => {
+  return buildApiUrl(API_BASE_PATHS.MULTIPLAYER, route, params)
 }
