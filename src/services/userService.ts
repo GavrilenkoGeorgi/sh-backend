@@ -189,7 +189,7 @@ class UserService {
 
   async delete(id: string) {
     if (!id) throw new Error('Check id.')
-    await userModel.findOneAndRemove({ _id: id })
+    await userModel.findOneAndDelete({ _id: id })
     return `Deleted acc id: ${id}`
   }
 

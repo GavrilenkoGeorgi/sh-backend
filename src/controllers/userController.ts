@@ -182,7 +182,7 @@ class UserController {
   async delete(req: ReqWithUserData, res: Response, next: NextFunction) {
     try {
       const { user } = req
-      await userService.delete(user?.id)
+      await userService.delete(user!.id)
       return res.end()
     } catch (err) {
       res.status(400)
