@@ -127,7 +127,7 @@ class UserService {
 
     let profile = await userModel
       .findOneAndUpdate(filter, update, {
-        returnOriginal: false,
+        returnDocument: 'after',
       })
       .select(USER_SAFE_FIELDS)
 
@@ -144,7 +144,7 @@ class UserService {
       const token = tokenService.generateRecoveryToken({ email })
       await mailService.sendRecoveryEmail(
         email,
-        `${process.env.CLIENT_URL}/forgotpwd?token=${token}`,
+        `${process.env.CLIENT_URL}${USER_ROUTES.FORGOT_PASSWORD}?token=${token}`,
       )
 
       await userModel.findOneAndUpdate(

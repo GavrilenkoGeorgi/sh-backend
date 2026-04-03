@@ -2,6 +2,7 @@ import { Server, type Socket } from 'socket.io'
 
 import { type SocketUser } from '../../modules/multiplayer/types/multiplayer.types'
 import { inviteService } from '../../modules/multiplayer/services/invite.service'
+import { gameService } from '../../modules/multiplayer/services/game.service'
 import { presenceService } from '../services/presence.service'
 
 export function registerInviteHandlers(io: Server, socket: Socket): void {
@@ -73,7 +74,34 @@ export function registerInviteHandlers(io: Server, socket: Socket): void {
       emitToUser(io, result.fromUserId, 'invite:status', statusPayload)
       emitToUser(io, result.toUserId, 'invite:status', statusPayload)
 
-      // TODO: Phase 7 will create the game here and emit game:started
+      // create game: inviter = player1, invited user = player2 (starts first)
+      const { gameState, usernames } = await gameService.createGame(
+        result.fromUserId,
+        result.toUserId,
+      )
+
+      const gameRoom = `game:${gameState.gameId}`
+
+      // join all sockets of both players to the game room
+      await joinUserToRoom(io, result.fromUserId, gameRoom)
+      await joinUserToRoom(io, result.toUserId, gameRoom)
+
+      // emit game:started to each player with their respective opponent
+      const player1Payload = gameService.buildGameStartedPayload(
+        gameState,
+        result.fromUserId,
+        result.toUserId,
+        usernames,
+      )
+      emitToUser(io, result.fromUserId, 'game:started', player1Payload)
+
+      const player2Payload = gameService.buildGameStartedPayload(
+        gameState,
+        result.toUserId,
+        result.fromUserId,
+        usernames,
+      )
+      emitToUser(io, result.toUserId, 'game:started', player2Payload)
 
       if (typeof callback === 'function') {
         callback({ success: true })
@@ -153,4 +181,20 @@ function emitActionError(
     action,
     message,
   })
+}
+
+// join all active sockets of a user to a Socket.IO room
+async function joinUserToRoom(
+  io: Server,
+  userId: string,
+  room: string,
+): Promise<void> {
+  const socketIds = presenceService.getSocketIdsByUserId(userId)
+  for (const socketId of socketIds) {
+    // again, need to decide on multitab support or remove this loop
+    const remoteSocket = io.sockets.sockets.get(socketId)
+    if (remoteSocket) {
+      await remoteSocket.join(room)
+    }
+  }
 }
