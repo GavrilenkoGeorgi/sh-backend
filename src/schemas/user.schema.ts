@@ -1,15 +1,12 @@
-import { object, string } from 'zod'
+import { z } from 'zod'
+import { nameSchema, passwordSchema } from './shared.schema'
 
-const UserSchema = {
-  body: object({
-    name: string({ required_error: 'name is required' }),
-    email: string({
-      required_error: 'email is required',
-    }).email('not a valid email'),
-    password: string({
-      required_error: 'password is required',
-    }).min(8, 'password too short - should be 8 chars minimum')
-  })
-}
+const UserSchema = z.object({
+  body: z.object({
+    name: nameSchema,
+    email: z.email({ error: 'Needs to be a valid email address' }),
+    password: passwordSchema,
+  }),
+})
 
-export const newUserData  = object(UserSchema)
+export const newUserData = UserSchema

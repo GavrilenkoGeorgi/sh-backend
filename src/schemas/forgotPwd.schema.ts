@@ -1,11 +1,9 @@
-import { object, string } from 'zod'
+import { object, z } from 'zod'
 
 const ForgotPwdSchema = {
   body: object({
-    email: string({
-      required_error: 'email is required',
-    }).email('not a valid email')
-  })
+    email: z.email({ error: 'not a valid email' }),
+  }),
 }
 
-export const ForgotPwdData  = object(ForgotPwdSchema)
+export const ForgotPwdData = object(ForgotPwdSchema)

@@ -1,26 +1,59 @@
-import { Schema, model } from 'mongoose'
+import {
+  Schema,
+  model,
+  HydratedDocument,
+  InferSchemaType,
+  Types,
+  Model,
+} from 'mongoose'
 import Result from './resultModel'
 import Token from './tokenModel'
 
-const UserSchema = new Schema({
-  name: {type: String, required: true},
-  email: {type: String, unique: true, required: true},
-  password: {type: String, required: true},
-  isActivated: {type: Boolean, default: false},
-  activationLink: {type: String},
-  passwordUpdateToken: {type: String},
-  results: [{ type: Schema.Types.ObjectId, ref: 'Result'}]
-})
+const UserSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: { type: String, required: true },
+    isActivated: { type: Boolean, default: false },
+    activationLink: { type: String },
+    passwordUpdateToken: { type: String },
+    results: [{ type: Schema.Types.ObjectId, ref: 'Result' }],
+  },
+  {
+    timestamps: true,
+  },
+)
 
-UserSchema.post('findOneAndRemove', async function (doc) {
-  // remove access token
-  await Token.findOneAndRemove({ user: doc._id })
-  // remove results
+// raw document shape, before Mongoose document methods)
+export type User = InferSchemaType<typeof UserSchema>
+
+// full Mongoose document type (recommended for req.user, query results, etc.)
+export type UserDocument = HydratedDocument<User>
+
+// optional explicit model type
+export type UserModel = Model<User>
+
+// cleanup after user deletion via findOneAndDelete / findByIdAndDelete
+UserSchema.post('findOneAndDelete', async function (doc: UserDocument | null) {
+  if (!doc) return
+
+  // remove token(s) linked to this user
+  await Token.findOneAndDelete({ user: doc._id })
+
+  // remove related results
   if (doc.results.length > 0) {
-    for (let id of doc.results ) {
-      await Result.findByIdAndDelete(id)
-    }
+    await Result.deleteMany({
+      _id: { $in: doc.results as Types.ObjectId[] },
+    })
   }
 })
 
-export default model('User', UserSchema)
+const UserModel = model<User>('User', UserSchema)
+
+export default UserModel

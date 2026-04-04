@@ -22,7 +22,7 @@ export const calculateAverage = (array: number[]) => {
 */
 export const computePercentFromMax = (
   averageScore: number,
-  maxPossibleScore: number
+  maxPossibleScore: number,
 ) => {
   let result = Math.floor((averageScore / maxPossibleScore) * 100)
   return result
@@ -49,7 +49,7 @@ export const compileStats = (results: Result[]) => {
   const schoolScores: number[] = []
   let stats = emptyStats
   let diceStats = emptyDiceStats
-  let ids: string[] = []
+  let ids: Date[] = []
 
   // init
   for (const name in stats) stats[name as keyof typeof stats] = 0
@@ -71,7 +71,7 @@ export const compileStats = (results: Result[]) => {
     })
   })
 
-  const compileLineChartAxisData = (data: number[], ids: string[]) => {
+  const compileLineChartAxisData = (data: number[], ids: Date[]) => {
     return takeLastMapped(data, ids, 50)
   }
 

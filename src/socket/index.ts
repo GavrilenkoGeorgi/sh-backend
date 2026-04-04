@@ -4,6 +4,7 @@ import { Server } from 'socket.io'
 import { socketAuth } from './auth'
 import { registerPresenceHandlers } from './handlers/presence.handlers'
 import { registerInviteHandlers } from './handlers/invite.handlers'
+import { registerGameHandlers } from './handlers/game.handlers'
 
 let io: Server
 
@@ -20,6 +21,7 @@ export function initializeSocket(httpServer: HttpServer): Server {
   io.on('connection', (socket) => {
     registerPresenceHandlers(io, socket)
     registerInviteHandlers(io, socket)
+    registerGameHandlers(io, socket)
 
     // TODO: remove after testing is complete
     socket.emit('debug:connected', {

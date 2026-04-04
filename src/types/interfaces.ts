@@ -1,9 +1,13 @@
 import { Request } from 'express'
-import { JwtPayload } from 'jsonwebtoken'
 import { Document } from 'mongoose'
+import { UserDocument } from '../models/userModel'
+
+export interface JwtUser {
+  id: string
+}
 
 export interface ReqWithUserData extends Request {
-  user?: JwtPayload
+  user?: UserDocument
 }
 
 export interface Stats {

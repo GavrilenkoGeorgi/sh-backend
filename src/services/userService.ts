@@ -13,7 +13,7 @@ class UserService {
   async registration({ name, email, password }: LoginCreds) {
     const existingUser = await userModel.findOne({ email })
     if (existingUser) {
-      throw new Error('User already exists.')
+      throw new Error('Something went wrong in the piping system.') // security reasons
     }
 
     const hashPassword = await bcrypt.hash(password, SALT_ROUNDS)
@@ -127,7 +127,7 @@ class UserService {
 
     let profile = await userModel
       .findOneAndUpdate(filter, update, {
-        returnOriginal: false,
+        returnDocument: 'after',
       })
       .select(USER_SAFE_FIELDS)
 
@@ -144,7 +144,7 @@ class UserService {
       const token = tokenService.generateRecoveryToken({ email })
       await mailService.sendRecoveryEmail(
         email,
-        `${process.env.CLIENT_URL}/forgotpwd?token=${token}`,
+        `${process.env.CLIENT_URL}${USER_ROUTES.FORGOT_PASSWORD}?token=${token}`,
       )
 
       await userModel.findOneAndUpdate(
@@ -189,7 +189,7 @@ class UserService {
 
   async delete(id: string) {
     if (!id) throw new Error('Check id.')
-    await userModel.findOneAndRemove({ _id: id })
+    await userModel.findOneAndDelete({ _id: id })
     return `Deleted acc id: ${id}`
   }
 

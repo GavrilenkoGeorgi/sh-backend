@@ -11,7 +11,7 @@ class GameService {
     }
 
     const result = await resultModel.create(data)
-    user.results.push(result.id)
+    user.results.push(result._id)
     await user.save()
 
     return result
