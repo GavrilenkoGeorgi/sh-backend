@@ -1,4 +1,6 @@
-import MultiplayerGame from '../models/MultiplayerGame'
+import MultiplayerGame, {
+  type MultiplayerGameDocument,
+} from '../models/MultiplayerGame'
 import User from '../../../models/userModel'
 
 import type {
@@ -7,9 +9,15 @@ import type {
   MultiplayerGameState,
   GameStartedPayload,
   GameStateUpdatedPayload,
+  GameEndedPayload,
   TurnMoveInput,
   BasicUser,
 } from '../types/multiplayer.types'
+
+export interface SubmitTurnResult {
+  stateUpdated: GameStateUpdatedPayload
+  gameEnded: GameEndedPayload | null
+}
 
 const ALL_CATEGORIES: ScoreCategory[] = [
   'ones',
@@ -126,11 +134,53 @@ class GameService {
     }
   }
 
+  async endActiveGamesForDisconnectedUser(
+    disconnectedUserId: string,
+  ): Promise<Array<{ remainingUserId: string; payload: GameEndedPayload }>> {
+    const activeGames = await MultiplayerGame.find({
+      status: 'active',
+      $or: [
+        { player1Id: disconnectedUserId },
+        { player2Id: disconnectedUserId },
+      ],
+    })
+
+    const endedGames: Array<{
+      remainingUserId: string
+      payload: GameEndedPayload
+    }> = []
+
+    for (const game of activeGames) {
+      const remainingUserId =
+        game.player1Id === disconnectedUserId ? game.player2Id : game.player1Id
+
+      game.status = 'abandoned'
+      game.endedReason = 'disconnect'
+      game.winnerId = remainingUserId
+
+      await game.save()
+
+      const gameState = this.buildGameState(game)
+
+      endedGames.push({
+        remainingUserId,
+        payload: {
+          gameId: gameState.gameId,
+          reason: 'opponent_disconnected',
+          winnerId: game.winnerId,
+          gameState,
+        },
+      })
+    }
+
+    return endedGames
+  }
+
   async submitTurn(
     gameId: string,
     playerId: string,
     move: TurnMoveInput,
-  ): Promise<GameStateUpdatedPayload> {
+  ): Promise<SubmitTurnResult> {
     const game = await MultiplayerGame.findById(gameId)
     if (!game) {
       throw new Error('Game not found')
@@ -218,14 +268,57 @@ class GameService {
       createdAt: new Date().toISOString(),
     })
 
-    // switch turn to the other player and increment turn number
+    // check if the game is complete (both players used all categories)
     const otherPlayerId = isPlayer1 ? game.player2Id : game.player1Id
-    game.currentTurnPlayerId = otherPlayerId
-    game.turnNumber += 1
+    const otherPlayerState = game.players.get(otherPlayerId)
+
+    const currentPlayerDone =
+      playerState.usedCategories.length === ALL_CATEGORIES.length
+    const otherPlayerDone =
+      otherPlayerState?.usedCategories.length === ALL_CATEGORIES.length
+
+    let gameEnded: GameEndedPayload | null = null
+
+    if (currentPlayerDone && otherPlayerDone) {
+      // game is complete
+      game.status = 'finished'
+      game.endedReason = 'completed'
+
+      const otherTotal = otherPlayerState?.totalScore ?? 0
+      if (playerState.totalScore > otherTotal) {
+        game.winnerId = playerId
+      } else if (otherTotal > playerState.totalScore) {
+        game.winnerId = otherPlayerId
+      } else {
+        game.winnerId = null // tie
+      }
+    } else {
+      // switch turn to the other player and increment turn number
+      game.currentTurnPlayerId = otherPlayerId
+      game.turnNumber += 1
+    }
 
     game.markModified('players')
     await game.save()
 
+    const gameState = this.buildGameState(game)
+
+    if (game.status === 'finished') {
+      gameEnded = {
+        gameId: gameState.gameId,
+        reason: 'completed',
+        winnerId: game.winnerId,
+        gameState,
+      }
+    }
+
+    return {
+      stateUpdated: { gameId: gameState.gameId, gameState },
+      gameEnded,
+    }
+  }
+
+  private buildGameState(game: MultiplayerGameDocument): MultiplayerGameState {
     // build plain players object from the mongoose map
     const players: Record<string, MultiplayerPlayerState> = {}
     for (const [key, value] of game.players.entries()) {
@@ -236,7 +329,7 @@ class GameService {
       }
     }
 
-    const gameState: MultiplayerGameState = {
+    return {
       gameId: game._id.toString(),
       status: game.status,
       player1Id: game.player1Id,
@@ -244,9 +337,9 @@ class GameService {
       currentTurnPlayerId: game.currentTurnPlayerId,
       turnNumber: game.turnNumber,
       players,
+      winnerId: game.winnerId,
+      endedReason: game.endedReason,
     }
-
-    return { gameId: gameState.gameId, gameState }
   }
 }
 

@@ -13,7 +13,7 @@ class UserService {
   async registration({ name, email, password }: LoginCreds) {
     const existingUser = await userModel.findOne({ email })
     if (existingUser) {
-      throw new Error('User already exists.')
+      throw new Error('Something went wrong in the piping system.') // security reasons
     }
 
     const hashPassword = await bcrypt.hash(password, SALT_ROUNDS)

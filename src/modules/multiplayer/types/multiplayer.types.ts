@@ -131,6 +131,13 @@ export interface GameStateUpdatedPayload {
   gameState: MultiplayerGameState
 }
 
+export interface GameEndedPayload {
+  gameId: string
+  reason: GameEndReason
+  winnerId?: string | null
+  gameState?: MultiplayerGameState
+}
+
 // client -> server payloads for game actions
 export interface GameSubmitTurnPayload {
   gameId: string

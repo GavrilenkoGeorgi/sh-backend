@@ -51,9 +51,15 @@ export function registerGameHandlers(io: Server, socket: Socket): void {
         },
       )
 
-      // broadcast updated game state to the game room (both players)
       const gameRoom = `game:${gameId}`
-      io.to(gameRoom).emit('game:state-updated', result)
+
+      // always broadcast updated game state to both players
+      io.to(gameRoom).emit('game:state-updated', result.stateUpdated)
+
+      // if the game ended, emit game:ended to both players
+      if (result.gameEnded) {
+        io.to(gameRoom).emit('game:ended', result.gameEnded)
+      }
 
       if (typeof callback === 'function') {
         callback({ success: true })
