@@ -1,6 +1,7 @@
 import MultiplayerGame, {
   type MultiplayerGameDocument,
 } from '../models/MultiplayerGame'
+import MultiplayerResult from '../models/MultiplayerResult'
 import User from '../../../models/userModel'
 
 import type {
@@ -10,6 +11,7 @@ import type {
   GameStartedPayload,
   GameStateUpdatedPayload,
   GameEndedPayload,
+  GameEndReason,
   TurnMoveInput,
   BasicUser,
 } from '../types/multiplayer.types'
@@ -159,6 +161,7 @@ class GameService {
       game.winnerId = remainingUserId
 
       await game.save()
+      await this.persistResultsForEndedGame(game, 'opponent_disconnected')
 
       const gameState = this.buildGameState(game)
 
@@ -301,6 +304,10 @@ class GameService {
     game.markModified('players')
     await game.save()
 
+    if (game.status === 'finished') {
+      await this.persistResultsForEndedGame(game, 'completed')
+    }
+
     const gameState = this.buildGameState(game)
 
     if (game.status === 'finished') {
@@ -316,6 +323,98 @@ class GameService {
       stateUpdated: { gameId: gameState.gameId, gameState },
       gameEnded,
     }
+  }
+
+  private async persistResultsForEndedGame(
+    game: MultiplayerGameDocument,
+    reason: GameEndReason,
+  ): Promise<void> {
+    const player1State = game.players.get(game.player1Id)
+    const player2State = game.players.get(game.player2Id)
+
+    if (!player1State || !player2State) {
+      throw new Error(
+        'Cannot persist multiplayer results: missing player state',
+      )
+    }
+
+    const playersToPersist = [
+      {
+        playerId: game.player1Id,
+        opponentId: game.player2Id,
+        playerState: player1State,
+        opponentState: player2State,
+      },
+      {
+        playerId: game.player2Id,
+        opponentId: game.player1Id,
+        playerState: player2State,
+        opponentState: player1State,
+      },
+    ]
+
+    for (const playerToPersist of playersToPersist) {
+      const outcome = this.resolveOutcome(
+        game.winnerId,
+        playerToPersist.playerId,
+      )
+
+      const persistedResult = await MultiplayerResult.findOneAndUpdate(
+        {
+          multiplayerGameId: game._id,
+          playerId: playerToPersist.playerId,
+        },
+        {
+          $setOnInsert: {
+            multiplayerGameId: game._id,
+            playerId: playerToPersist.playerId,
+            opponentId: playerToPersist.opponentId,
+            outcome,
+            reason,
+            finalScore: playerToPersist.playerState.totalScore,
+            opponentScore: playerToPersist.opponentState.totalScore,
+            scoreCard: { ...playerToPersist.playerState.scoreCard },
+            usedCategories: [...playerToPersist.playerState.usedCategories],
+            turnNumber: game.turnNumber,
+          },
+        },
+        {
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true,
+        },
+      )
+
+      if (!persistedResult) {
+        throw new Error('Failed to persist multiplayer result')
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        playerToPersist.playerId,
+        {
+          $addToSet: {
+            multiplayerResults: persistedResult._id,
+          },
+        },
+      )
+
+      if (!updatedUser) {
+        throw new Error(
+          `Failed to link multiplayer result to user ${playerToPersist.playerId}`,
+        )
+      }
+    }
+  }
+
+  private resolveOutcome(
+    winnerId: string | null | undefined,
+    playerId: string,
+  ): 'win' | 'loss' | 'tie' {
+    if (!winnerId) {
+      return 'tie'
+    }
+
+    return winnerId === playerId ? 'win' : 'loss'
   }
 
   private buildGameState(game: MultiplayerGameDocument): MultiplayerGameState {

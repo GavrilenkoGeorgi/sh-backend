@@ -18,4 +18,10 @@ router.get(
   MultiplayerController.getOutgoingInvites,
 )
 
+router.get(
+  MULTIPLAYER_ROUTES.RESULTS,
+  protect,
+  MultiplayerController.getResults,
+)
+
 export default router
