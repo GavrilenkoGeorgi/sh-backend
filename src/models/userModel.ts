@@ -8,6 +8,7 @@ import {
 } from 'mongoose'
 import Result from './resultModel'
 import Token from './tokenModel'
+import MultiplayerResult from '../modules/multiplayer/models/MultiplayerResult'
 
 const UserSchema = new Schema(
   {
@@ -24,6 +25,9 @@ const UserSchema = new Schema(
     activationLink: { type: String },
     passwordUpdateToken: { type: String },
     results: [{ type: Schema.Types.ObjectId, ref: 'Result' }],
+    multiplayerResults: [
+      { type: Schema.Types.ObjectId, ref: 'MultiplayerResult' },
+    ],
   },
   {
     timestamps: true,
@@ -50,6 +54,13 @@ UserSchema.post('findOneAndDelete', async function (doc: UserDocument | null) {
   if (doc.results.length > 0) {
     await Result.deleteMany({
       _id: { $in: doc.results as Types.ObjectId[] },
+    })
+  }
+
+  // remove related multiplayer results
+  if (doc.multiplayerResults.length > 0) {
+    await MultiplayerResult.deleteMany({
+      _id: { $in: doc.multiplayerResults as Types.ObjectId[] },
     })
   }
 })

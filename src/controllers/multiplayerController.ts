@@ -1,6 +1,7 @@
 import { type NextFunction, type Response } from 'express'
 
 import { inviteService } from '../modules/multiplayer/services/invite.service'
+import { multiplayerResultService } from '../modules/multiplayer/services/result.service'
 import { type ReqWithUserData } from '../types/interfaces'
 
 class MultiplayerController {
@@ -33,6 +34,19 @@ class MultiplayerController {
 
       const invites = await inviteService.getOutgoingPendingInvites(req.user.id)
       return res.json({ invites })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async getResults(req: ReqWithUserData, res: Response, next: NextFunction) {
+    try {
+      if (!req.user?.id) {
+        return res.sendStatus(401)
+      }
+
+      const results = await multiplayerResultService.getUserResults(req.user.id)
+      return res.json({ results })
     } catch (error) {
       next(error)
     }

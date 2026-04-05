@@ -22,6 +22,7 @@ export const GAME_ROUTES = {
 export const MULTIPLAYER_ROUTES = {
   INCOMING_INVITES: '/invites/incoming',
   OUTGOING_INVITES: '/invites/outgoing',
+  RESULTS: '/results',
 } as const
 
 // Base API paths

@@ -57,6 +57,8 @@ export function registerGameHandlers(io: Server, socket: Socket): void {
       io.to(gameRoom).emit('game:state-updated', result.stateUpdated)
 
       // if the game ended, emit game:ended to both players
+      // TODO: consider if we want to split this into a separate
+      // event instead of piggybacking on the state update result.
       if (result.gameEnded) {
         io.to(gameRoom).emit('game:ended', result.gameEnded)
       }
