@@ -1,4 +1,4 @@
-export type IdValue = { id: string; value: number }
+export type IdValue = { id: string | Date; value: number }
 
 /**
  * Take last up to `limit` items from `values` and corresponding `ids`, keep original order.
@@ -6,8 +6,8 @@ export type IdValue = { id: string; value: number }
  */
 export function takeLastMapped(
   values: number[],
-  ids: string[],
-  limit = 50
+  ids: Date[],
+  limit = 50,
 ): IdValue[] {
   if (!values || !ids || values.length === 0 || ids.length === 0) return []
 
