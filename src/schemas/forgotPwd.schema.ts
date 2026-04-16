@@ -1,8 +1,8 @@
-import { object, z } from 'zod'
+import { object, email } from 'zod'
 
 const ForgotPwdSchema = {
   body: object({
-    email: z.email({ error: 'not a valid email' }),
+    email: email({ error: 'not a valid email' }),
   }),
 }
 

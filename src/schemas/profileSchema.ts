@@ -1,10 +1,10 @@
-import { object, string, z } from 'zod'
+import { object, email } from 'zod'
 import { nameSchema } from './shared.schema'
 
 const ProfileSchema = {
   body: object({
     name: nameSchema,
-    email: z.email({ error: 'not a valid email' }),
+    email: email({ error: 'not a valid email' }),
   }),
 }
 

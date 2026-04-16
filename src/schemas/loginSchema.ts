@@ -1,4 +1,4 @@
-import { object, string, z } from 'zod'
+import { object, z } from 'zod'
 import { passwordSchema } from './shared.schema'
 
 const LoginSchema = {
