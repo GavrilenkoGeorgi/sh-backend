@@ -58,7 +58,10 @@ export interface OutgoingInvitePayload {
 export type MultiplayerGameStatus = 'active' | 'finished' | 'abandoned'
 
 // game end reasons
-export type GameEndReason = 'completed' | 'opponent_disconnected'
+export type GameEndReason =
+  | 'completed'
+  | 'opponent_disconnected'
+  | 'school_incomplete'
 
 // category keys matching existing frontend scoring logic
 export type SchoolCombination =
@@ -115,7 +118,7 @@ export interface MultiplayerGameState {
   turnNumber: number
   players: Record<string, MultiplayerPlayerState>
   winnerId?: string | null
-  endedReason?: 'completed' | 'disconnect'
+  endedReason?: 'completed' | 'disconnect' | 'school-incomplete'
 }
 
 // server -> client payloads for game lifecycle

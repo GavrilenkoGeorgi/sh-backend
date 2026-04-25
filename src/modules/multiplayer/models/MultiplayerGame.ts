@@ -15,7 +15,7 @@ export interface MultiplayerGameDocument extends Document {
   turnNumber: number
   moves: TurnMoveRecord[]
   winnerId?: string | null
-  endedReason?: 'completed' | 'disconnect'
+  endedReason?: 'completed' | 'disconnect' | 'school-incomplete'
   createdAt: Date
   updatedAt: Date
 }
@@ -64,7 +64,7 @@ const MultiplayerGameSchema = new Schema<MultiplayerGameDocument>(
     winnerId: { type: String, default: null },
     endedReason: {
       type: String,
-      enum: ['completed', 'disconnect'],
+      enum: ['completed', 'disconnect', 'school-incomplete'],
       default: undefined,
     },
   },
