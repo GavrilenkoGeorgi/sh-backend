@@ -35,6 +35,8 @@ This file should exist in both the frontend and backend repositories and stay ma
 - Server broadcasts updated game state after each completed turn
 - If a player disconnects during an active game, the game ends immediately
 - Final multiplayer results are persisted
+- School phase: each player must save all 6 school categories before game categories become available
+- If a player cannot score any school category at max rolls, the game ends immediately with that player losing
 
 ## Explicitly NOT included in V1
 
@@ -141,7 +143,7 @@ type InviteStatus =
 ## Game end reason
 
 ```ts
-type GameEndReason = 'completed' | 'opponent_disconnected'
+type GameEndReason = 'completed' | 'opponent_disconnected' | 'school_incomplete'
 ```
 
 ---
@@ -442,7 +444,7 @@ interface MultiplayerGameState {
   players: Record<string, MultiplayerPlayerState>
 
   winnerId?: string | null
-  endedReason?: 'completed' | 'disconnect'
+  endedReason?: 'completed' | 'disconnect' | 'school-incomplete'
 }
 ```
 
@@ -715,6 +717,51 @@ IMPORTANT:
 
 ---
 
+# School Phase Rules
+
+## Definition
+
+A player is in the **school phase** while fewer than 6 school categories (`ones`–`sixes`) are in their `usedCategories`.
+
+Once all 6 school categories are saved the player moves to the **game phase** and may only save game categories.
+
+## Frontend enforcement
+
+- During the school phase the client only computes and displays preview scores for school categories.
+- During the game phase the client only computes and displays preview scores for game categories.
+- Determination is based on: `usedSchoolCategories.length < 6` (counts school categories already in `usedCategories`).
+
+## School failure
+
+School failure occurs when, after the 3rd roll of a school-phase turn, none of the remaining school categories has any dice that produce a non-null school score.
+
+When school failure is detected the client emits `game:school-failed`.
+
+### `game:school-failed` payload
+
+```ts
+{
+  gameId: string
+}
+```
+
+### Backend handling
+
+On `game:school-failed`:
+
+1. Validate:
+   - game exists and is `active`
+   - sender belongs to the game and is the current turn player
+   - the sending player is still in the school phase (`usedSchoolCategories.length < 6`)
+2. End the game:
+   - set `status = 'finished'`
+   - set `winnerId = opponentId`
+   - set `endedReason = 'school-incomplete'`
+3. Persist the final state
+4. Emit `game:ended` to both players
+
+---
+
 # Turn Application Rules (Backend)
 
 If `game:submit-turn` passes validation:
@@ -740,6 +787,8 @@ IMPORTANT:
 
 # Game Completion Rules
 
+## Normal completion
+
 The game is complete when:
 
 - BOTH players have used ALL allowed score categories
@@ -757,6 +806,18 @@ When complete:
 4. Set `endedReason = 'completed'`
 5. Persist final result
 6. Emit `game:ended`
+
+## School-incomplete end
+
+Triggered by `game:school-failed` (see School Phase Rules above).
+
+When the school failure is validated:
+
+1. Set `status = 'finished'`
+2. Set `winnerId = opponentId` (the player who did NOT fail)
+3. Set `endedReason = 'school-incomplete'`
+4. Persist final result
+5. Emit `game:ended`
 
 IMPORTANT:
 The frontend should treat `game:ended` as final and exit the active multiplayer session after displaying the result.

@@ -39,6 +39,15 @@ const ALL_CATEGORIES: ScoreCategory[] = [
   'chance',
 ]
 
+const SCHOOL_CATEGORIES: ScoreCategory[] = [
+  'ones',
+  'twos',
+  'threes',
+  'fours',
+  'fives',
+  'sixes',
+]
+
 const VALID_CATEGORIES_SET = new Set<string>(ALL_CATEGORIES)
 
 const SCORE_RANGES: Record<ScoreCategory, { min: number; max: number }> = {
@@ -177,6 +186,61 @@ class GameService {
     }
 
     return endedGames
+  }
+
+  async handleSchoolFailed(
+    gameId: string,
+    playerId: string,
+  ): Promise<GameEndedPayload> {
+    const game = await MultiplayerGame.findById(gameId)
+    if (!game) {
+      throw new Error('Game not found')
+    }
+
+    if (game.status !== 'active') {
+      throw new Error('Game is not active')
+    }
+
+    const isPlayer1 = game.player1Id === playerId
+    const isPlayer2 = game.player2Id === playerId
+    if (!isPlayer1 && !isPlayer2) {
+      throw new Error('You are not a player in this game')
+    }
+
+    if (game.currentTurnPlayerId !== playerId) {
+      throw new Error('It is not your turn')
+    }
+
+    const playerState = game.players.get(playerId)
+    if (!playerState) {
+      throw new Error('Player state not found')
+    }
+
+    const schoolCategoriesUsed = playerState.usedCategories.filter((category) =>
+      (SCHOOL_CATEGORIES as string[]).includes(category),
+    ).length
+
+    if (schoolCategoriesUsed >= SCHOOL_CATEGORIES.length) {
+      throw new Error('Player is not in the school phase')
+    }
+
+    const opponentId = isPlayer1 ? game.player2Id : game.player1Id
+
+    game.status = 'finished'
+    game.winnerId = opponentId
+    game.endedReason = 'school-incomplete'
+
+    await game.save()
+    await this.persistResultsForEndedGame(game, 'school_incomplete')
+
+    const gameState = this.buildGameState(game)
+
+    return {
+      gameId: gameState.gameId,
+      reason: 'school_incomplete',
+      winnerId: opponentId,
+      gameState,
+    }
   }
 
   async submitTurn(
@@ -380,7 +444,7 @@ class GameService {
         },
         {
           upsert: true,
-          new: true,
+          returnDocument: 'after',
           setDefaultsOnInsert: true,
         },
       )
