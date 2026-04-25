@@ -444,7 +444,7 @@ class GameService {
         },
         {
           upsert: true,
-          new: true,
+          returnDocument: 'after',
           setDefaultsOnInsert: true,
         },
       )
