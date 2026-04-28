@@ -35,7 +35,7 @@ const MultiplayerResultSchema = new Schema<MultiplayerResultDocument>(
     },
     reason: {
       type: String,
-      enum: ['completed', 'opponent_disconnected'],
+      enum: ['completed', 'opponent_disconnected', 'school_incomplete'],
       required: true,
     },
     finalScore: { type: Number, required: true },

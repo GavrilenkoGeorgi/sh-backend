@@ -72,6 +72,38 @@ export function registerGameHandlers(io: Server, socket: Socket): void {
       emitActionError(socket, callback, message)
     }
   })
+
+  socket.on('game:school-failed', async (payload, callback) => {
+    try {
+      const gameId =
+        typeof payload?.gameId === 'string' ? payload.gameId.trim() : ''
+
+      if (!gameId) {
+        return emitActionError(
+          socket,
+          callback,
+          'Invalid payload: gameId is required',
+        )
+      }
+
+      const gameEnded = await gameService.handleSchoolFailed(
+        gameId,
+        authenticatedUser.id,
+      )
+
+      io.to(`game:${gameId}`).emit('game:ended', gameEnded)
+
+      if (typeof callback === 'function') {
+        callback({ success: true })
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to process school failure'
+      emitActionError(socket, callback, message)
+    }
+  })
 }
 
 function emitActionError(
