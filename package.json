@@ -4,7 +4,7 @@
   "description": "Sh backend.",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q -r dotenv/config build/index.js\"",
+    "dev": "tsx watch -r dotenv/config src/index.ts",
     "build": "npx tsc",
     "start": "node build/index.js",
     "test-email": "npm run build && node -r dotenv/config build/utils/checkSmtpCreds.js",
@@ -40,12 +40,11 @@
     "@types/nodemailer": "^6.4.23",
     "@types/supertest": "^7.2.0",
     "@types/uuid": "^9.0.8",
-    "concurrently": "^8.2.2",
     "jest": "^30.3.0",
     "mongodb-memory-server": "^11.1.0",
-    "nodemon": "^3.0.1",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.9",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }
