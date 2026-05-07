@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals'
-import bcrypt from 'bcryptjs'
-import * as uuid from 'uuid'
+import { hash, compare } from 'bcryptjs'
+import { v4 } from 'uuid'
 
 import userService from './userService'
 import userModel from '../models/userModel'
@@ -43,7 +43,9 @@ jest.mock('uuid', () => ({
 describe('UserService', () => {
   describe('registration', () => {
     it('should throw if email is already taken', async () => {
-      jest.mocked(userModel.findOne).mockResolvedValue({ email: 'taken@test.com' } as never)
+      jest
+        .mocked(userModel.findOne)
+        .mockResolvedValue({ email: 'taken@test.com' } as never)
 
       await expect(
         userService.registration({
@@ -62,8 +64,8 @@ describe('UserService', () => {
       }
 
       jest.mocked(userModel.findOne).mockResolvedValue(null)
-      jest.mocked(bcrypt.hash).mockResolvedValue('hashed-password' as never)
-      jest.mocked(uuid.v4).mockReturnValue('activation-link-uuid')
+      jest.mocked(hash).mockResolvedValue('hashed-password' as never)
+      jest.mocked(v4).mockReturnValue('activation-link-uuid' as never)
       jest.mocked(userModel.create).mockResolvedValue(fakeUser as never)
       jest.mocked(mailService.sendActivationEmail).mockResolvedValue(undefined)
 
@@ -115,7 +117,7 @@ describe('UserService', () => {
         isActivated: true,
         password: 'hashed-password',
       } as never)
-      jest.mocked(bcrypt.compare).mockResolvedValue(false as never)
+      jest.mocked(compare).mockResolvedValue(false as never)
 
       await expect(
         userService.login({
@@ -143,8 +145,10 @@ describe('UserService', () => {
       }
 
       jest.mocked(userModel.findOne).mockResolvedValue(fakeUser as never)
-      jest.mocked(bcrypt.compare).mockResolvedValue(true as never)
-      jest.mocked(tokenService.generateTokens).mockReturnValue(fakeTokens as never)
+      jest.mocked(compare).mockResolvedValue(true as never)
+      jest
+        .mocked(tokenService.generateTokens)
+        .mockReturnValue(fakeTokens as never)
       jest.mocked(tokenService.saveToken).mockResolvedValue(undefined as never)
       jest.mocked(userModel.findById).mockReturnValue({
         select: jest.fn().mockResolvedValue(fakeSafeUser as never),
