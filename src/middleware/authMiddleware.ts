@@ -1,11 +1,15 @@
 import jwt from 'jsonwebtoken'
-import asyncHandler from 'express-async-handler' //?
 
 import User from '../models/userModel.js'
 import { type JwtPayload } from 'jsonwebtoken'
-import { type ReqWithUserData, type JwtUser } from '../types/interfaces.js'
+import { type Response, type NextFunction } from 'express'
+import { type ReqWithUserData } from '../types/interfaces.js'
 
-const protect = asyncHandler(async (req: ReqWithUserData, res, next) => {
+const protect = async (
+  req: ReqWithUserData,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   let token = req.cookies.accessToken
 
   if (token) {
@@ -33,6 +37,6 @@ const protect = asyncHandler(async (req: ReqWithUserData, res, next) => {
     res.status(401)
     throw new Error('Not authorized, no token.')
   }
-})
+}
 
 export { protect }

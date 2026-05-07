@@ -28,7 +28,11 @@ class UserController {
     }
   }
 
-  async activate(req: Request, res: Response, next: NextFunction) {
+  async activate(
+    req: Request<{ link: string }>, // TODO: define a type for this
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const url = process.env.CLIENT_URL
       if (!url) {

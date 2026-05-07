@@ -1,7 +1,5 @@
-import dotenv from 'dotenv'
+import 'dotenv/config'
 import mailService from '../services/mailService'
-
-dotenv.config()
 
 async function testEmailConfiguration() {
   console.log('Testing SMTP configuration...')
@@ -10,7 +8,7 @@ async function testEmailConfiguration() {
   console.log('SMTP_USER:', process.env.SMTP_USER)
   console.log(
     'SMTP_PASSWORD:',
-    process.env.SMTP_PASSWORD ? '[SET]' : '[NOT SET]'
+    process.env.SMTP_PASSWORD ? '[SET]' : '[NOT SET]',
   )
 
   try {
@@ -23,7 +21,7 @@ async function testEmailConfiguration() {
 
       await mailService.sendRecoveryEmail(
         testEmail,
-        'https://example.com/test-recovery-link'
+        'https://example.com/test-recovery-link',
       )
 
       console.log('✅ Test email sent successfully!')
@@ -44,7 +42,7 @@ async function testEmailConfiguration() {
       console.log('   - Scroll down to "App passwords"')
       console.log('   - Generate a new app password for "Mail"')
       console.log(
-        '3. Use the generated App Password in your .env file as SMTP_PASSWORD'
+        '3. Use the generated App Password in your .env file as SMTP_PASSWORD',
       )
       console.log('4. Make sure SMTP_USER is your full Gmail address')
     }
