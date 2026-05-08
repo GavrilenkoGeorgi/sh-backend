@@ -1,6 +1,6 @@
 import userModel from '../models/userModel'
-import bcrypt from 'bcryptjs'
-import * as uuid from 'uuid'
+import { hash, compare } from 'bcryptjs'
+import { v4 } from 'uuid'
 
 import tokenService from './tokenService'
 import mailService from './mailService'
@@ -16,8 +16,8 @@ class UserService {
       throw new Error('Something went wrong in the piping system.') // security reasons
     }
 
-    const hashPassword = await bcrypt.hash(password, SALT_ROUNDS)
-    const activationLink = uuid.v4()
+    const hashPassword = await hash(password, SALT_ROUNDS)
+    const activationLink = v4()
     const user = await userModel.create({
       name,
       email,
@@ -57,7 +57,7 @@ class UserService {
       throw new Error('Check activation status.')
     }
 
-    const checkPassword = await bcrypt.compare(password, user.password)
+    const checkPassword = await compare(password, user.password)
     if (!checkPassword) {
       throw new Error("Can't login, check creds.")
     }
@@ -179,7 +179,7 @@ class UserService {
       throw new Error("Can't update, check token.")
     }
 
-    const hashPassword = await bcrypt.hash(password, SALT_ROUNDS)
+    const hashPassword = await hash(password, SALT_ROUNDS)
     user.password = hashPassword
     user.passwordUpdateToken = ''
 
