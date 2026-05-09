@@ -4,7 +4,7 @@
   "description": "Sh backend.",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch -r dotenv/config src/index.ts",
+    "dev": "nodemon --exec tsx --ext ts,json src/index.ts",
     "build": "npx tsc",
     "start": "node build/index.js",
     "test-email": "npm run build && node -r dotenv/config build/utils/checkSmtpCreds.js",
@@ -41,6 +41,7 @@
     "mongodb-memory-server": "^11.1.0",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.9",
+    "nodemon": "^3.1.10",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   }
