@@ -52,3 +52,11 @@ export interface UserStats {
   schoolScores: ChartAxisData[]
   scores: ChartAxisData[]
 }
+
+export interface StatsFilter {
+  mode: 'lastN' | 'dateRange'
+  lastN?: number
+  dateFrom?: Date
+  dateTo?: Date
+  minScore?: number
+}
