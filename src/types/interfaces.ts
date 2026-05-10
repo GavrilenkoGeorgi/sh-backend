@@ -46,6 +46,7 @@ export interface UserStats {
   games: number
   max: number
   average: number
+  schoolAverage: number
   percentFromMax: number
   favDiceValues: ChartAxisData[]
   favComb: ChartAxisData[]
