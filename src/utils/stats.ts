@@ -1,6 +1,7 @@
 import { ChartAxisData, Result, Stats, DiceStats } from '../types/interfaces'
 import { emptyStats, emptyDiceStats } from '../constants'
 import { takeLastMapped } from './index'
+import { MAX_SCORE } from '../schemas/result.schema'
 
 export const calculateAverage = (array: number[]) => {
   var total = 0
@@ -56,7 +57,7 @@ export const compileStats = (results: Result[]) => {
   for (const name in diceStats) diceStats[name as keyof typeof diceStats] = 0
 
   // prepare data
-  results.forEach((item) => {
+  results.reverse().forEach((item) => {
     ids.push(item._id.getTimestamp())
     scores.push(item.score)
     schoolScores.push(item.schoolScore)
@@ -96,12 +97,13 @@ export const compileStats = (results: Result[]) => {
   }
 
   const average = Math.floor(calculateAverage(scores))
-  const percentFromMax = computePercentFromMax(average, 879) // max score
+  const percentFromMax = computePercentFromMax(average, MAX_SCORE)
 
   const userStats = {
     games: results.length,
     max: Math.max(...scores),
     average,
+    schoolAverage: Math.floor(calculateAverage(schoolScores)),
     percentFromMax,
     favDiceValues: compileBarChartAxisData(diceStats),
     favComb: compileBarChartAxisData(stats),
