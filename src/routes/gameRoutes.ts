@@ -3,6 +3,7 @@ import GameController from '../controllers/gameController'
 import { protect } from '../middleware/authMiddleware'
 import { validate } from '../middleware/validationMiddleware'
 import { newResultData } from '../schemas/result.schema'
+import { statsFilterSchema } from '../schemas/statsFilter.schema'
 import { GAME_ROUTES } from '../constants/routes'
 
 const router = express.Router()
@@ -10,9 +11,13 @@ const router = express.Router()
 router.post(
   GAME_ROUTES.SAVE,
   [protect, validate(newResultData)],
-  GameController.save
+  GameController.save,
 )
-router.get(GAME_ROUTES.STATS, protect, GameController.getStats)
+router.get(
+  GAME_ROUTES.STATS,
+  [protect, validate(statsFilterSchema)],
+  GameController.getStats,
+)
 router.get(GAME_ROUTES.USER_RESULTS, protect, GameController.getResults)
 router.delete(GAME_ROUTES.CLEAR_STATS, protect, GameController.clearStats)
 
