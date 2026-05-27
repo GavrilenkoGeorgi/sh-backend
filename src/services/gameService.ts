@@ -1,7 +1,12 @@
 import { Types } from 'mongoose'
 import userModel from '../models/userModel'
 import resultModel from '../models/resultModel'
-import { Result, StatsFilter } from '../types/interfaces'
+import {
+  Result,
+  StatsFilter,
+  StatsResponse,
+  AppliedFilter,
+} from '../types/interfaces'
 import { compileStats } from '../utils/stats'
 
 // TODO: check filters one more time, as they can have some tricky edge cases
@@ -74,7 +79,14 @@ class GameService {
       .sort({ _id: -1 })
       .limit(limit)
 
-    return compileStats(results)
+    const appliedFilter: AppliedFilter = {
+      mode: filter.mode,
+      lastN: filter.lastN ?? null,
+      minScore: filter.minScore ?? null,
+    }
+
+    const statsData = compileStats(results)
+    return { filter: appliedFilter, ...statsData } satisfies StatsResponse
   }
 
   async clearStats(id: string) {

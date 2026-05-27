@@ -1,8 +1,8 @@
-export type IdValue = { id: string | Date; value: number }
+export type IdValue = { timestamp: string | Date; value: number }
 
 /**
  * Take last up to `limit` items from `values` and corresponding `ids`, keep original order.
- * Returns array of { id, value }.
+ * Returns array of { timestamp, value }.
  */
 export function takeLastMapped(
   values: number[],
@@ -18,7 +18,7 @@ export function takeLastMapped(
   const len = Math.min(slicedValues.length, slicedIds.length)
   const result: IdValue[] = []
   for (let i = 0; i < len; i++) {
-    result.push({ id: slicedIds[i], value: slicedValues[i] })
+    result.push({ timestamp: slicedIds[i], value: slicedValues[i] })
   }
   return result
 }
