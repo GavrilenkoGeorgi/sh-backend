@@ -1,4 +1,11 @@
-import { ChartAxisData, Result, Stats, DiceStats } from '../types/interfaces'
+import {
+  ChartAxisData,
+  ScoreAxisData,
+  UserStats,
+  Result,
+  Stats,
+  DiceStats,
+} from '../types/interfaces'
 import { emptyStats, emptyDiceStats } from '../constants'
 import { takeLastMapped } from './index'
 import { MAX_SCORE } from '../schemas/result.schema'
@@ -72,8 +79,12 @@ export const compileStats = (results: Result[]) => {
     })
   })
 
-  const compileLineChartAxisData = (data: number[], ids: Date[]) => {
-    return takeLastMapped(data, ids, 50)
+  const compileLineChartAxisData = (
+    data: number[],
+    ids: Date[],
+  ): ScoreAxisData[] => {
+    // DB query already limits the result count; pass full length to avoid double-truncation
+    return takeLastMapped(data, ids, data.length)
   }
 
   const compileBarChartAxisData = (data: Stats | DiceStats) => {
@@ -99,16 +110,20 @@ export const compileStats = (results: Result[]) => {
   const average = Math.floor(calculateAverage(scores))
   const percentFromMax = computePercentFromMax(average, MAX_SCORE)
 
-  const userStats = {
-    games: results.length,
-    max: Math.max(...scores),
-    average,
-    schoolAverage: Math.floor(calculateAverage(schoolScores)),
-    percentFromMax,
+  const userStats: UserStats = {
+    summary: {
+      games: results.length,
+      max: Math.max(...scores),
+      average,
+      // null when there are no results — -1 would be ambiguous with a real negative school score
+      schoolAverage:
+        results.length > 0 ? Math.floor(calculateAverage(schoolScores)) : null,
+      percentFromMax,
+    },
+    scores: compileLineChartAxisData(scores, ids),
+    schoolScores: compileLineChartAxisData(schoolScores, ids),
     favDiceValues: compileBarChartAxisData(diceStats),
     favComb: compileBarChartAxisData(stats),
-    schoolScores: compileLineChartAxisData(schoolScores, ids),
-    scores: compileLineChartAxisData(scores, ids),
   }
 
   return userStats

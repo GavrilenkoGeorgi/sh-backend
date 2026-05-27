@@ -33,6 +33,12 @@ export interface ChartAxisData {
   value: number
 }
 
+// used for score series — `timestamp` is an ISO date string or Date object
+export interface ScoreAxisData {
+  timestamp: string | Date
+  value: number
+}
+
 export interface DiceStats {
   ones: number
   twos: number
@@ -42,16 +48,30 @@ export interface DiceStats {
   sixes: number
 }
 
-export interface UserStats {
+export interface StatsSummary {
   games: number
   max: number
   average: number
-  schoolAverage: number
+  schoolAverage: number | null
   percentFromMax: number
+}
+
+export interface UserStats {
+  summary: StatsSummary
+  scores: ScoreAxisData[]
+  schoolScores: ScoreAxisData[]
   favDiceValues: ChartAxisData[]
   favComb: ChartAxisData[]
-  schoolScores: ChartAxisData[]
-  scores: ChartAxisData[]
+}
+
+export interface AppliedFilter {
+  mode: 'lastN' | 'dateRange'
+  lastN: number | null
+  minScore: number | null
+}
+
+export interface StatsResponse extends UserStats {
+  filter: AppliedFilter
 }
 
 export interface StatsFilter {
