@@ -6,10 +6,10 @@ import { tokenPayload, tokenData, recoveryTokenData } from '../types'
 class TokenService {
   generateTokens(payload: tokenPayload) {
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET || '', {
-      expiresIn: '7d',
+      expiresIn: '1h',
     })
     const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH || '', {
-      expiresIn: '14d',
+      expiresIn: '7d',
     })
 
     return {
