@@ -1,11 +1,16 @@
 import { z } from 'zod'
 
 // query params arrive as strings, so we validate them as strings
+const MAX_LAST_N = 500
+
 const positiveIntString = z
   .string()
-  .refine((val) => /^\d+$/.test(val) && Number(val) > 0, {
-    message: 'must be a positive integer',
-  })
+  .refine(
+    (val) => /^\d+$/.test(val) && Number(val) > 0 && Number(val) <= MAX_LAST_N,
+    {
+      message: `must be a positive integer between 1 and ${MAX_LAST_N}`,
+    },
+  )
 
 const nonNegativeIntString = z.string().refine((val) => /^\d+$/.test(val), {
   message: 'must be a non-negative integer',

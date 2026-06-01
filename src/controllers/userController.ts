@@ -102,8 +102,9 @@ class UserController {
         ...cookieOptions,
       })
 
-      return res.json(userData)
+      return res.json({ user: userData.user })
     } catch (err) {
+      res.status(401)
       next(err)
     }
   }
