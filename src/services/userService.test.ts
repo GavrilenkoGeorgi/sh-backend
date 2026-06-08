@@ -144,15 +144,17 @@ describe('UserService', () => {
         refreshToken: 'refresh-token',
       }
 
-      jest.mocked(userModel.findOne).mockResolvedValue(fakeUser as never)
+      jest
+        .mocked(userModel.findOne)
+        .mockResolvedValueOnce(fakeUser as never)
+        .mockReturnValueOnce({
+          select: jest.fn().mockResolvedValue(fakeSafeUser as never),
+        } as never)
       jest.mocked(compare).mockResolvedValue(true as never)
       jest
         .mocked(tokenService.generateTokens)
         .mockReturnValue(fakeTokens as never)
       jest.mocked(tokenService.saveToken).mockResolvedValue(undefined as never)
-      jest.mocked(userModel.findById).mockReturnValue({
-        select: jest.fn().mockResolvedValue(fakeSafeUser as never),
-      } as never)
 
       const result = await userService.login({
         email: 'user@test.com',

@@ -92,7 +92,7 @@ class GameService {
   async clearStats(id: string) {
     const user = await userModel.findById(id)
     if (user != null) {
-      for (let resId of user.results) {
+      for (const resId of user.results) {
         await resultModel.findByIdAndDelete(resId)
       }
       user.results = []
