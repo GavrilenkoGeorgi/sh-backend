@@ -3,7 +3,6 @@ import User from '../../../models/userModel'
 import { presenceService } from '../../../socket/services/presence.service'
 
 import type {
-  BasicUser,
   InviteReceivedPayload,
   OutgoingInvitePayload,
   InviteStatusPayload,

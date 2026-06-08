@@ -11,8 +11,8 @@ import { takeLastMapped } from './index'
 import { MAX_SCORE } from '../schemas/result.schema'
 
 export const calculateAverage = (array: number[]) => {
-  var total = 0
-  var count = 0
+  let total = 0
+  let count = 0
 
   array.forEach((item) => {
     total += item
@@ -32,7 +32,7 @@ export const computePercentFromMax = (
   averageScore: number,
   maxPossibleScore: number,
 ) => {
-  let result = Math.floor((averageScore / maxPossibleScore) * 100)
+  const result = Math.floor((averageScore / maxPossibleScore) * 100)
   return result
 }
 
@@ -55,9 +55,9 @@ export const getAxisValues = (arr: ChartAxisData[]) => {
 export const compileStats = (results: Result[]) => {
   const scores: number[] = []
   const schoolScores: number[] = []
-  let stats = emptyStats
-  let diceStats = emptyDiceStats
-  let ids: Date[] = []
+  const stats = emptyStats
+  const diceStats = emptyDiceStats
+  const ids: Date[] = []
 
   // init
   for (const name in stats) stats[name as keyof typeof stats] = 0

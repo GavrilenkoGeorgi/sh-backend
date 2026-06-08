@@ -69,7 +69,9 @@ class UserService {
     })
 
     await tokenService.saveToken(user.id, tokens.refreshToken)
-    const safeUser = await userModel.findById(user.id).select(USER_SAFE_FIELDS)
+    // TODO: think how we can strip the password and isActivated fields
+    // and get rid of this call
+    const safeUser = await userModel.findOne({ email }).select(USER_SAFE_FIELDS)
     return { ...tokens, user: safeUser }
   }
 
@@ -125,7 +127,7 @@ class UserService {
       email: userData.email,
     }
 
-    let profile = await userModel
+    const profile = await userModel
       .findOneAndUpdate(filter, update, {
         returnDocument: 'after',
       })
@@ -154,17 +156,20 @@ class UserService {
 
       return `Recovery email sent to ${email}`
     } catch (error) {
-      console.error('Error in forgotPwd:', error)
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error'
 
       if (errorMessage.includes('Username and Password not accepted')) {
         throw new Error(
           'Email service is temporarily unavailable. Please contact support.',
+          { cause: error }, // the idea is to hide the actual error message from the user, but log it for debugging purposes
         )
       }
 
-      throw new Error('Failed to send recovery email. Please try again later.')
+      throw new Error(
+        'Failed to send recovery email. Please try again later.',
+        { cause: error },
+      )
     }
   }
 

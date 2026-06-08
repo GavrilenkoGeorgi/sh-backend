@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Get the current branch name
+BRANCH_NAME=$(git symbolic-ref --short HEAD)
+
+# Extract Jira issue key and capitalize it
+JIRA_KEY=$(echo "$BRANCH_NAME" | grep -o -E '[A-Za-z]+-[0-9]+' | tr '[:lower:]' '[:upper:]' | head -n 1)
+
+# Only proceed if a Jira key is found and it is not already in the commit message
+if [ -n "$JIRA_KEY" ] && ! grep -q "$JIRA_KEY" "$1"; then
+    # Append the key to the end of the first line of the commit message
+    sed -i.bak "1s/$/ $JIRA_KEY/" "$1"
+    rm -f "$1.bak"
+fi
