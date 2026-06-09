@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from 'express'
 
-interface IMiddlewareError extends Error {
+interface MiddlewareError extends Error {
   kind: string
 }
 
@@ -10,7 +10,12 @@ const notFound = (req: Request, res: Response, next: NextFunction) => {
   next(error)
 }
 
-const errorHandler = (err: IMiddlewareError, req: Request, res: Response) => {
+const errorHandler = (
+  err: MiddlewareError,
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
   let statusCode = res.statusCode === 200 ? 500 : res.statusCode
   let message = err.message
 

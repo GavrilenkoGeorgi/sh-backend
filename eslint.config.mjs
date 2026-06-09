@@ -6,6 +6,16 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
+  {
     // linting specifically to test files
     files: ['**/*.test.ts', '**/*.spec.ts', '**/__tests__/**/*.ts'],
     plugins: {

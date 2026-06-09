@@ -21,7 +21,7 @@ function objectIdFromDate(date: Date): Types.ObjectId {
 
 class GameService {
   async save(id: string, data: Result) {
-    const user = await userModel.findById(id)
+    const user = await userModel.findById(id).select('+results')
     if (!user) {
       throw new Error("Can't save, no user with this id.")
     }
