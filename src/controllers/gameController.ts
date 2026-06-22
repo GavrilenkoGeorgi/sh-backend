@@ -25,9 +25,8 @@ class GameController {
 
       let filter: StatsFilter
 
-      if (!mode) {
-        // default: last 50 games
-        filter = { mode: 'lastN', lastN: 50 }
+      if (!mode || mode === 'all') {
+        filter = { mode: 'all' }
       } else if (mode === 'lastN') {
         filter = { mode: 'lastN', lastN: Number(lastN) }
       } else {

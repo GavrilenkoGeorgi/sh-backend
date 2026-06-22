@@ -53,7 +53,7 @@ describe('gameService.getStats', () => {
 
     const result = await gameService.getStats(userId, {
       mode: 'lastN',
-      lastN: 50,
+      lastN: 1,
     })
 
     expect(result).toBeNull()

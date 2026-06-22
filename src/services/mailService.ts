@@ -13,7 +13,7 @@ class MailService {
       !process.env.SMTP_PASSWORD
     ) {
       throw new Error(
-        'SMTP configuration is incomplete. Please check your environment variables.'
+        'SMTP configuration is incomplete. Please check your environment variables.',
       )
     }
 
@@ -49,8 +49,7 @@ class MailService {
       })
       console.log(`Activation email sent successfully to ${to}`)
     } catch (error) {
-      console.error('Error sending activation email:', error)
-      throw new Error('Failed to send activation email')
+      throw new Error('Failed to send activation email', { cause: error })
     }
   }
 
@@ -71,8 +70,7 @@ class MailService {
       })
       console.log(`Recovery email sent successfully to ${to}`)
     } catch (error) {
-      console.error('Error sending recovery email:', error)
-      throw new Error('Failed to send recovery email')
+      throw new Error('Failed to send recovery email', { cause: error })
     }
   }
 

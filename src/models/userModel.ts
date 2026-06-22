@@ -22,11 +22,13 @@ const UserSchema = new Schema(
     },
     password: { type: String, required: true },
     isActivated: { type: Boolean, default: false },
-    activationLink: { type: String },
-    passwordUpdateToken: { type: String },
-    results: [{ type: Schema.Types.ObjectId, ref: 'Result' }],
+    activationLink: { type: String, select: false },
+    passwordUpdateToken: { type: String, select: false },
+    results: [{ type: Schema.Types.ObjectId, ref: 'Result', select: false }],
+    accessToken: { type: String, select: false },
+    refreshToken: { type: String },
     multiplayerResults: [
-      { type: Schema.Types.ObjectId, ref: 'MultiplayerResult' },
+      { type: Schema.Types.ObjectId, ref: 'MultiplayerResult', select: false },
     ],
   },
   {

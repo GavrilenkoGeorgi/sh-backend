@@ -51,17 +51,18 @@ class UserController {
     try {
       const { email, password } = req.body
       const userData = await userService.login({ email, password })
-      res.cookie('refreshToken', userData.refreshToken, {
+
+      const { accessToken, refreshToken, ...data } = userData
+
+      res.cookie('refreshToken', refreshToken, {
         maxAge: refreshCookieMaxAge,
         ...cookieOptions,
       })
-      res.cookie('accessToken', userData.accessToken, {
+      res.cookie('accessToken', accessToken, {
         maxAge: accessCookieMaxAge,
         ...cookieOptions,
       })
-      // TODO: remove access and refresh tokens from response body
-      const { refreshToken, accessToken, ...userDataWithoutTokens } = userData
-      return res.json(userDataWithoutTokens.user)
+      return res.json(data.user)
     } catch (err) {
       res.status(409)
       next(err)
