@@ -52,7 +52,7 @@ describe('statsFilterSchema', () => {
     })
 
     it('fails with an unrecognised mode value', () => {
-      expect(parse({ mode: 'all' }).success).toBe(false)
+      expect(parse({ mode: 'unset' }).success).toBe(false) // we added 'all' mode
     })
 
     it('fails when lastN is not a positive integer', () => {

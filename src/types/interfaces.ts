@@ -64,8 +64,10 @@ export interface UserStats {
   favComb: ChartAxisData[]
 }
 
+type FilterMode = 'all' | 'lastN' | 'dateRange'
+
 export interface AppliedFilter {
-  mode: 'lastN' | 'dateRange'
+  mode: FilterMode
   lastN: number | null
   minScore: number | null
 }
@@ -75,7 +77,7 @@ export interface StatsResponse extends UserStats {
 }
 
 export interface StatsFilter {
-  mode: 'lastN' | 'dateRange'
+  mode: FilterMode
   lastN?: number
   dateFrom?: Date
   dateTo?: Date
