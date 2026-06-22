@@ -25,7 +25,7 @@ const isoDateString = z
 
 const statsQuerySchema = z
   .object({
-    mode: z.enum(['lastN', 'dateRange']).optional(),
+    mode: z.enum(['all', 'lastN', 'dateRange']).optional(),
     lastN: positiveIntString.optional(),
     dateFrom: isoDateString.optional(),
     dateTo: isoDateString.optional(),
