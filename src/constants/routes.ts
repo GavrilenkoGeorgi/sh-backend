@@ -15,6 +15,7 @@ export const USER_ROUTES = {
 export const GAME_ROUTES = {
   SAVE: '/save',
   STATS: '/stats',
+  MULTIPLAYER_STATS: '/multiplayer-stats',
   USER_RESULTS: '/user-results',
   CLEAR_STATS: '/clearstats',
 } as const
