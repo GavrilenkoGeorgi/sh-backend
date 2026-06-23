@@ -1,6 +1,10 @@
 import { Schema, model, type Document, type Types } from 'mongoose'
 
-import type { ScoreCategory, GameEndReason } from '../types/multiplayer.types'
+import type {
+  ScoreCategory,
+  GameEndReason,
+  MultiplayerPlayerScoreCard,
+} from '../types/multiplayer.types'
 
 export type MultiplayerResultOutcome = 'win' | 'loss' | 'tie'
 
@@ -12,7 +16,7 @@ export interface MultiplayerResultDocument extends Document {
   reason: GameEndReason
   finalScore: number
   opponentScore: number
-  scoreCard: Record<ScoreCategory, number | null>
+  scoreCard: MultiplayerPlayerScoreCard
   usedCategories: ScoreCategory[]
   turnNumber: number
   createdAt: Date

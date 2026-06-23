@@ -395,12 +395,35 @@ Do not introduce alternate names like `threeOfAKind`, `fullHouse`, or `yahtzee`.
 ## Per-player multiplayer score state
 
 ```ts
+interface MultiplayerPlayerScoreCard {
+  // school: one save per category
+  ones: number | null
+  twos: number | null
+  threes: number | null
+  fours: number | null
+  fives: number | null
+  sixes: number | null
+  // game: up to 3 saves per category
+  pair: number[]
+  twoPairs: number[]
+  triple: number[]
+  full: number[]
+  quads: number[]
+  poker: number[]
+  small: number[]
+  large: number[]
+  chance: number[]
+}
+
 interface MultiplayerPlayerState {
   totalScore: number
   usedCategories: ScoreCategory[]
-  scoreCard: Record<ScoreCategory, number | null>
+  scoreCard: MultiplayerPlayerScoreCard
 }
 ```
+
+NOTE: `usedCategories` allows duplicate entries for game categories.
+Each game category appears once per save, up to 3 times.
 
 ## Turn move input (client submits this)
 
@@ -587,7 +610,7 @@ When an invite is accepted:
 
 ## Initial scorecard shape
 
-Each player scorecard must contain all categories initialized to `null`.
+School categories are initialized to `null`. Game categories are initialized to `[]`.
 
 Example:
 
@@ -599,15 +622,15 @@ Example:
   fours: null,
   fives: null,
   sixes: null,
-  pair: null,
-  twoPairs: null,
-  triple: null,
-  full: null,
-  quads: null,
-  poker: null,
-  small: null,
-  large: null,
-  chance: null
+  pair: [],
+  twoPairs: [],
+  triple: [],
+  full: [],
+  quads: [],
+  poker: [],
+  small: [],
+  large: [],
+  chance: []
 }
 ```
 
@@ -665,7 +688,9 @@ The backend must validate ALL of the following:
 3. Sender belongs to the game
 4. Sender is the current turn player
 5. `move.category` is a valid category
-6. Category has not already been used by this player
+6. Category is available for this player:
+   - school category: must not appear in `usedCategories`
+   - game category: must appear fewer than 3 times in `usedCategories`
 7. `move.dice` contains between 1 and 5 integers
 8. Each die value is between 1 and 6 inclusive
 9. `move.score` is a finite number
@@ -766,7 +791,9 @@ On `game:school-failed`:
 
 If `game:submit-turn` passes validation:
 
-1. Write submitted score into that player's `scoreCard[category]`
+1. Write submitted score into that player's `scoreCard`:
+   - school category: assign `scoreCard[category] = move.score`
+   - game category: push `scoreCard[category].push(move.score)`
 2. Append category to that player's `usedCategories`
 3. Recompute that player's `totalScore` from the scorecard OR increment by submitted score
    - Recommended: recompute from scorecard for safety
@@ -795,7 +822,7 @@ The game is complete when:
 
 Equivalent check:
 
-- `usedCategories.length === TOTAL_CATEGORY_COUNT` for both players
+- `usedCategories.length === 33` for both players (6 school × 1 save + 9 game × 3 saves)
 
 When complete:
 

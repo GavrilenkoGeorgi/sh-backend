@@ -85,11 +85,30 @@ export type GameCombination =
 
 export type ScoreCategory = SchoolCombination | GameCombination
 
+// per-player scorecard — school categories allow one save, game categories up to 3
+export interface MultiplayerPlayerScoreCard {
+  ones: number | null
+  twos: number | null
+  threes: number | null
+  fours: number | null
+  fives: number | null
+  sixes: number | null
+  pair: number[]
+  twoPairs: number[]
+  triple: number[]
+  full: number[]
+  quads: number[]
+  poker: number[]
+  small: number[]
+  large: number[]
+  chance: number[]
+}
+
 // per-player state in a multiplayer game
 export interface MultiplayerPlayerState {
   totalScore: number
   usedCategories: ScoreCategory[]
-  scoreCard: Record<ScoreCategory, number | null>
+  scoreCard: MultiplayerPlayerScoreCard
 }
 
 // turn move submitted by client

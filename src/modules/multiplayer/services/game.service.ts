@@ -6,6 +6,9 @@ import User from '../../../models/userModel'
 
 import type {
   ScoreCategory,
+  SchoolCombination,
+  GameCombination,
+  MultiplayerPlayerScoreCard,
   MultiplayerPlayerState,
   MultiplayerGameState,
   GameStartedPayload,
@@ -39,7 +42,7 @@ const ALL_CATEGORIES: ScoreCategory[] = [
   'chance',
 ]
 
-const SCHOOL_CATEGORIES: ScoreCategory[] = [
+const SCHOOL_CATEGORIES: SchoolCombination[] = [
   'ones',
   'twos',
   'threes',
@@ -47,6 +50,35 @@ const SCHOOL_CATEGORIES: ScoreCategory[] = [
   'fives',
   'sixes',
 ]
+
+const GAME_CATEGORIES: GameCombination[] = [
+  'pair',
+  'twoPairs',
+  'triple',
+  'full',
+  'quads',
+  'poker',
+  'small',
+  'large',
+  'chance',
+]
+
+const MAX_GAME_SAVES = 3
+
+// 6 school × 1 save + 9 game × 3 saves
+const TOTAL_CATEGORY_SAVES = 33
+
+const SCHOOL_CATEGORIES_SET = new Set<string>(SCHOOL_CATEGORIES)
+
+function categoryIsAvailable(
+  category: ScoreCategory,
+  usedCategories: ScoreCategory[],
+): boolean {
+  if (SCHOOL_CATEGORIES_SET.has(category)) {
+    return !usedCategories.includes(category)
+  }
+  return usedCategories.filter((c) => c === category).length < MAX_GAME_SAVES
+}
 
 const VALID_CATEGORIES_SET = new Set<string>(ALL_CATEGORIES)
 
@@ -69,9 +101,22 @@ const SCORE_RANGES: Record<ScoreCategory, { min: number; max: number }> = {
 }
 
 function createEmptyPlayerState(): MultiplayerPlayerState {
-  const scoreCard = {} as Record<ScoreCategory, number | null>
-  for (const category of ALL_CATEGORIES) {
-    scoreCard[category] = null
+  const scoreCard: MultiplayerPlayerScoreCard = {
+    ones: null,
+    twos: null,
+    threes: null,
+    fours: null,
+    fives: null,
+    sixes: null,
+    pair: [],
+    twoPairs: [],
+    triple: [],
+    full: [],
+    quads: [],
+    poker: [],
+    small: [],
+    large: [],
+    chance: [],
   }
 
   return {
@@ -278,8 +323,8 @@ class GameService {
       throw new Error('Player state not found')
     }
 
-    if (playerState.usedCategories.includes(move.category)) {
-      throw new Error('Category already used')
+    if (!categoryIsAvailable(move.category, playerState.usedCategories)) {
+      throw new Error('Category is not available')
     }
 
     // validate dice shape
@@ -310,14 +355,23 @@ class GameService {
     }
 
     // apply the turn
-    playerState.scoreCard[move.category] = move.score
+    if (SCHOOL_CATEGORIES_SET.has(move.category)) {
+      playerState.scoreCard[move.category as SchoolCombination] = move.score
+    } else {
+      playerState.scoreCard[move.category as GameCombination].push(move.score)
+    }
     playerState.usedCategories.push(move.category)
 
     // recompute total score from scorecard for safety
     let totalScore = 0
-    for (const category of ALL_CATEGORIES) {
+    for (const category of SCHOOL_CATEGORIES) {
       const value = playerState.scoreCard[category]
-      if (value !== null && value !== undefined) {
+      if (value !== null) {
+        totalScore += value
+      }
+    }
+    for (const category of GAME_CATEGORIES) {
+      for (const value of playerState.scoreCard[category]) {
         totalScore += value
       }
     }
@@ -340,9 +394,9 @@ class GameService {
     const otherPlayerState = game.players.get(otherPlayerId)
 
     const currentPlayerDone =
-      playerState.usedCategories.length === ALL_CATEGORIES.length
+      playerState.usedCategories.length === TOTAL_CATEGORY_SAVES
     const otherPlayerDone =
-      otherPlayerState?.usedCategories.length === ALL_CATEGORIES.length
+      otherPlayerState?.usedCategories.length === TOTAL_CATEGORY_SAVES
 
     let gameEnded: GameEndedPayload | null = null
 
