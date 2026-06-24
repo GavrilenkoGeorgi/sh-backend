@@ -5,3 +5,4 @@ tsconfig.tsbuildinfo
 .github/*
 !.github/workflows/
 AGENTS.md
+docs/drafts

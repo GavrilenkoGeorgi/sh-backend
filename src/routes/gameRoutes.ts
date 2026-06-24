@@ -19,6 +19,11 @@ router.get(
   GameController.getStats,
 )
 router.get(GAME_ROUTES.USER_RESULTS, protect, GameController.getResults)
+router.get(
+  GAME_ROUTES.MULTIPLAYER_STATS,
+  protect,
+  GameController.getMultiplayerStats,
+)
 router.delete(GAME_ROUTES.CLEAR_STATS, protect, GameController.clearStats)
 
 export default router

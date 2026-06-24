@@ -8,6 +8,7 @@ import {
   AppliedFilter,
 } from '../types/interfaces'
 import { compileStats } from '../utils/stats'
+import MultiplayerResult from '../modules/multiplayer/models/MultiplayerResult'
 
 // TODO: check filters one more time, as they can have some tricky edge cases
 // construct an ObjectId boundary from a date for range-based queries on _id,
@@ -87,6 +88,28 @@ class GameService {
 
     const statsData = compileStats(results)
     return { filter: appliedFilter, ...statsData } satisfies StatsResponse
+  }
+
+  async getMultiplayerStats(id: string) {
+    const user = await userModel.findById(id).select('multiplayerResults')
+    if (!user) return null
+
+    const baseQuery: Record<string, unknown> = {}
+
+    baseQuery._id = { $in: user.multiplayerResults }
+
+    const results = await MultiplayerResult.find(baseQuery)
+      .sort({ _id: -1 })
+      .limit(0) // No limit, fetch all results for now
+
+    const metaData = {
+      totalGames: results.length,
+      wins: results.filter((r) => r.outcome === 'win').length,
+      losses: results.filter((r) => r.outcome === 'loss').length,
+      ties: results.filter((r) => r.outcome === 'tie').length,
+    }
+
+    return { metaData, results }
   }
 
   async clearStats(id: string) {
