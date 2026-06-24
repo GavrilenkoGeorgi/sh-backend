@@ -395,7 +395,7 @@ Do not introduce alternate names like `threeOfAKind`, `fullHouse`, or `yahtzee`.
 ## Per-player multiplayer score state
 
 ```ts
-interface MultiplayerPlayerScoreCard {
+interface MultiplayerScoreCard {
   // school: one save per category
   ones: number | null
   twos: number | null
@@ -418,7 +418,7 @@ interface MultiplayerPlayerScoreCard {
 interface MultiplayerPlayerState {
   totalScore: number
   usedCategories: ScoreCategory[]
-  scoreCard: MultiplayerPlayerScoreCard
+  scoreCard: MultiplayerScoreCard
 }
 ```
 

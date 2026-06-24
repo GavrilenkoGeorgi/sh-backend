@@ -8,7 +8,6 @@ import type {
   ScoreCategory,
   SchoolCombination,
   GameCombination,
-  MultiplayerPlayerScoreCard,
   MultiplayerPlayerState,
   MultiplayerGameState,
   GameStartedPayload,
@@ -17,6 +16,7 @@ import type {
   GameEndReason,
   TurnMoveInput,
   BasicUser,
+  MultiplayerScoreCard,
 } from '../types/multiplayer.types'
 
 export interface SubmitTurnResult {
@@ -101,7 +101,7 @@ const SCORE_RANGES: Record<ScoreCategory, { min: number; max: number }> = {
 }
 
 function createEmptyPlayerState(): MultiplayerPlayerState {
-  const scoreCard: MultiplayerPlayerScoreCard = {
+  const scoreCard: MultiplayerScoreCard = {
     ones: null,
     twos: null,
     threes: null,

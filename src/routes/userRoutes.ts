@@ -32,6 +32,7 @@ router.put(
   UserController.updatePwd,
 )
 router.delete(USER_ROUTES.DELETE, protect, UserController.delete)
+router.get(USER_ROUTES.USER_INFO, protect, UserController.getUserById)
 router
   .route(USER_ROUTES.PROFILE)
   .get(protect, UserController.getUserProfile)

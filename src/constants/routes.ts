@@ -10,6 +10,7 @@ export const USER_ROUTES = {
   UPDATE_PASSWORD: '/updatepwd',
   DELETE: '/delete',
   PROFILE: '/profile',
+  USER_INFO: '/profile/:id',
 } as const
 
 export const GAME_ROUTES = {
