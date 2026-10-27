@@ -10,11 +10,13 @@ export const USER_ROUTES = {
   UPDATE_PASSWORD: '/updatepwd',
   DELETE: '/delete',
   PROFILE: '/profile',
+  USER_INFO: '/profile/:id',
 } as const
 
 export const GAME_ROUTES = {
   SAVE: '/save',
   STATS: '/stats',
+  MULTIPLAYER_STATS: '/multiplayer-stats',
   USER_RESULTS: '/user-results',
   CLEAR_STATS: '/clearstats',
 } as const

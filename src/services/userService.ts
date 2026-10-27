@@ -120,6 +120,11 @@ class UserService {
     return user
   }
 
+  async getUserById(id: string) {
+    const user = await userModel.findById(id).select(USER_SAFE_FIELDS)
+    return user
+  }
+
   async updateUserProfile(id: string, userData: profileUpdateData) {
     const filter = { _id: id }
     const update = {

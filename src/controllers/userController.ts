@@ -146,6 +146,23 @@ class UserController {
     }
   }
 
+  async getUserById(
+    req: Request<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const { id } = req.params
+      const user = await userService.getUserById(id)
+      if (!user) {
+        return res.sendStatus(404)
+      }
+      return res.json(user)
+    } catch (err) {
+      next(err)
+    }
+  }
+
   async updateUserProfile(req: Request, res: Response, next: NextFunction) {
     try {
       const userData = req as ReqWithUserData

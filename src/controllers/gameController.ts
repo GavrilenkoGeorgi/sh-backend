@@ -49,6 +49,19 @@ class GameController {
     }
   }
 
+  async getMultiplayerStats(
+    req: ReqWithUserData,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const data = await gameService.getMultiplayerStats(req.user!.id)
+      return res.json(data)
+    } catch (err) {
+      next(err)
+    }
+  }
+
   async getResults(req: ReqWithUserData, res: Response, next: NextFunction) {
     try {
       const data = await gameService.getResults(req.user!.id)
