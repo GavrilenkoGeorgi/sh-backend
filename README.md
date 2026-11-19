@@ -62,7 +62,6 @@ Multiplayer includes:
 - @types/cors
 - @types/express
 - @types/jsonwebtoken
-- @types/nodemailer
 - @types/uuid
 
 ## API Overview

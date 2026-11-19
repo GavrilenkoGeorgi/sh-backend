@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 
-import { Transporter, TransportOptions } from 'nodemailer'
+import { Transporter } from 'nodemailer'
 
 class MailService {
   transporter: Transporter
@@ -17,7 +17,7 @@ class MailService {
       )
     }
 
-    this.transporter = nodemailer.createTransport<TransportOptions>({
+    this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT) || 465,
       secure: true, // true for 465, false for other ports
@@ -29,7 +29,7 @@ class MailService {
       tls: {
         rejectUnauthorized: false,
       },
-    } as TransportOptions)
+    })
   }
 
   async sendActivationEmail(to: string, link: string) {
