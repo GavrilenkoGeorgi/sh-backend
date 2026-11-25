@@ -18,11 +18,7 @@ export interface SocketUser {
 
 // invite statuses
 export type InviteStatus =
-  | 'pending'
-  | 'accepted'
-  | 'declined'
-  | 'cancelled'
-  | 'expired'
+  'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired'
 
 // client -> server payloads
 export interface InviteSendPayload {
@@ -41,6 +37,8 @@ export interface InviteDeclinePayload {
 export interface InviteReceivedPayload {
   inviteId: string
   fromUser: BasicUser
+  // ISO string, absent for legacy invites without expiry
+  expiresAt?: string
 }
 
 export interface InviteStatusPayload {
@@ -59,18 +57,11 @@ export type MultiplayerGameStatus = 'active' | 'finished' | 'abandoned'
 
 // game end reasons
 export type GameEndReason =
-  | 'completed'
-  | 'opponent_disconnected'
-  | 'school_incomplete'
+  'completed' | 'opponent_disconnected' | 'school_incomplete'
 
 // category keys matching existing frontend scoring logic
 export type SchoolCombination =
-  | 'ones'
-  | 'twos'
-  | 'threes'
-  | 'fours'
-  | 'fives'
-  | 'sixes'
+  'ones' | 'twos' | 'threes' | 'fours' | 'fives' | 'sixes'
 
 export type GameCombination =
   | 'pair'

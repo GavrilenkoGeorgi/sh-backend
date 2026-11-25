@@ -24,7 +24,14 @@ export const GAME_ROUTES = {
 export const MULTIPLAYER_ROUTES = {
   INCOMING_INVITES: '/invites/incoming',
   OUTGOING_INVITES: '/invites/outgoing',
+  DECLINE_INVITE: '/invites/:inviteId/decline',
   RESULTS: '/results',
+} as const
+
+export const PUSH_ROUTES = {
+  VAPID_PUBLIC_KEY: '/vapid-public-key',
+  SUBSCRIBE: '/subscribe',
+  UNSUBSCRIBE: '/unsubscribe',
 } as const
 
 // Base API paths
@@ -32,6 +39,7 @@ export const API_BASE_PATHS = {
   USERS: '/users',
   GAME: '/game',
   MULTIPLAYER: '/multiplayer',
+  PUSH: '/push',
 } as const
 
 // Helper functions for URL construction

@@ -47,6 +47,7 @@ export function registerPresenceHandlers(io: Server, socket: Socket): void {
   })
 }
 
+// TODO: emitToUser is duplicated in invite.handlers.ts and multiplayerController.ts, extract a shared helper into src/socket/services/
 function emitToUser(
   io: Server,
   userId: string,

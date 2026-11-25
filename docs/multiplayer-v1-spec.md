@@ -133,11 +133,7 @@ type MultiplayerGameStatus = 'active' | 'finished' | 'abandoned'
 
 ```ts
 type InviteStatus =
-  | 'pending'
-  | 'accepted'
-  | 'declined'
-  | 'cancelled'
-  | 'expired'
+  'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired'
 ```
 
 ## Game end reason
@@ -366,12 +362,7 @@ Do NOT rename these keys in V1.
 
 ```ts
 type SchoolCombination =
-  | 'ones'
-  | 'twos'
-  | 'threes'
-  | 'fours'
-  | 'fives'
-  | 'sixes'
+  'ones' | 'twos' | 'threes' | 'fours' | 'fives' | 'sixes'
 
 type GameCombination =
   | 'pair'
@@ -556,7 +547,7 @@ On `invite:send`:
 
 - `toUserId` must exist
 - `toUserId` must not equal current user ID
-- target user must be online
+- target user may be offline (they receive a web push if subscribed)
 - target user must not already be in an active multiplayer game
 - current user must not already be in an active multiplayer game
 - there must not already be a pending invite between these two users in either direction

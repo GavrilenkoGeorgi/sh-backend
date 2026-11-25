@@ -5,6 +5,7 @@ export interface InviteDocument extends Document {
   fromUserId: string
   toUserId: string
   status: InviteStatus
+  expiresAt?: Date
   createdAt: Date
   updatedAt: Date
 }
@@ -19,6 +20,8 @@ const InviteSchema = new Schema<InviteDocument>(
       default: 'pending',
       required: true,
     },
+    // not required: invites created before expiry existed have no value and never expire
+    expiresAt: { type: Date },
   },
   { timestamps: true },
 )
