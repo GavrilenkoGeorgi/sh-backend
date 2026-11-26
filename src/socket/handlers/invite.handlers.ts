@@ -36,10 +36,10 @@ export function registerInviteHandlers(io: Server, socket: Socket): void {
         io.to(socketId).emit('invite:received', inviteReceived)
       }
 
-      // offline recipients get a web push; not awaited so the ack isn't delayed
-      if (!presenceService.isUserOnline(toUserId)) {
-        void pushService.sendInvitePush(toUserId, inviteReceived)
-      }
+      // push goes to every recipient, online or not: a backgrounded PWA often keeps its
+      // socket open, so presence can't tell whether the user sees the toast. the service
+      // worker skips the notification when the app is visible. not awaited so the ack isn't delayed
+      void pushService.sendInvitePush(toUserId, inviteReceived)
 
       if (typeof callback === 'function') {
         callback({ success: true, inviteId: inviteReceived.inviteId })
