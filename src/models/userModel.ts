@@ -9,6 +9,7 @@ import {
 import Result from './resultModel'
 import Token from './tokenModel'
 import MultiplayerResult from '../modules/multiplayer/models/MultiplayerResult'
+import PushSubscription from '../modules/multiplayer/models/PushSubscription'
 
 const UserSchema = new Schema(
   {
@@ -51,6 +52,9 @@ UserSchema.post('findOneAndDelete', async function (doc: UserDocument | null) {
 
   // remove token(s) linked to this user
   await Token.findOneAndDelete({ user: doc._id })
+
+  // stale push subscriptions would keep notifying a deleted account
+  await PushSubscription.deleteMany({ userId: doc._id.toString() })
 
   // remove related results
   if (doc.results.length > 0) {
