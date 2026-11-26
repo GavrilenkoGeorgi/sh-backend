@@ -23,6 +23,8 @@ const UserSchema = new Schema(
     },
     password: { type: String, required: true },
     isActivated: { type: Boolean, default: false },
+    // last time the user had a multiplayer socket, used for the lobby list
+    lastSeenAt: { type: Date },
     activationLink: { type: String, select: false },
     passwordUpdateToken: { type: String, select: false },
     results: [{ type: Schema.Types.ObjectId, ref: 'Result', select: false }],

@@ -11,7 +11,7 @@ import type {
   InviteStatusPayload,
 } from '../types/multiplayer.types'
 
-const INVITABLE_SEARCH_LIMIT = 20
+const INVITABLE_USERS_LIMIT = 20
 
 // user input goes into a regex, so special characters must be literal
 function escapeRegex(value: string): string {
@@ -205,49 +205,51 @@ class InviteService {
     }))
   }
 
-  // online users are always listed; a search adds registered users matching the name prefix,
-  // so offline users can still be invited (they get a web push)
+  async recordLastSeen(userId: string): Promise<void> {
+    await User.updateOne({ _id: userId }, { lastSeenAt: new Date() })
+  }
+
+  // online users come first, followed by registered users so offline ones can still be
+  // invited (they get a web push): the ones matching the search prefix, or the most
+  // recently seen ones when there is no search
   async getInvitableUsers(
     userId: string,
     search?: string,
   ): Promise<InvitableUser[]> {
-    const usersById = new Map<string, InvitableUser>()
-
-    for (const onlineUser of presenceService.getOnlineUsers()) {
-      if (onlineUser.userId !== userId) {
-        usersById.set(onlineUser.userId, { ...onlineUser, online: true })
-      }
-    }
+    const onlineUsers: InvitableUser[] = presenceService
+      .getOnlineUsers()
+      .filter((onlineUser) => onlineUser.userId !== userId)
+      .map((onlineUser) => ({ ...onlineUser, online: true }))
 
     const searchPrefix = search?.trim()
+    const hasSearch =
+      searchPrefix !== undefined &&
+      searchPrefix.length >= INVITABLE_SEARCH_MIN_LENGTH
 
-    if (searchPrefix && searchPrefix.length >= INVITABLE_SEARCH_MIN_LENGTH) {
-      const matchedUsers = await User.find({
-        _id: { $ne: userId },
-        isActivated: true,
-        name: {
-          $regex: `^${escapeRegex(searchPrefix)}`,
-          $options: 'i',
-        },
-      })
-        .select('name')
-        .sort({ name: 1 })
-        .limit(INVITABLE_SEARCH_LIMIT)
-        .lean()
+    const users = await User.find({
+      _id: { $ne: userId },
+      isActivated: true,
+      ...(hasSearch && {
+        name: { $regex: `^${escapeRegex(searchPrefix)}`, $options: 'i' },
+      }),
+    })
+      .select('name')
+      // users without lastSeenAt sort last, newest registrations first
+      .sort(hasSearch ? { name: 1 } : { lastSeenAt: -1, createdAt: -1 })
+      .limit(INVITABLE_USERS_LIMIT)
+      .lean()
 
-      for (const matchedUser of matchedUsers) {
-        const matchedUserId = matchedUser._id.toString()
-        usersById.set(matchedUserId, {
-          userId: matchedUserId,
-          username: matchedUser.name,
-          online: presenceService.isUserOnline(matchedUserId),
-        })
-      }
-    }
+    const onlineUserIds = new Set(onlineUsers.map((user) => user.userId))
 
-    return Array.from(usersById.values()).sort((firstUser, secondUser) =>
-      firstUser.username.localeCompare(secondUser.username),
-    )
+    const otherUsers: InvitableUser[] = users
+      .map((user) => ({
+        userId: user._id.toString(),
+        username: user.name,
+        online: presenceService.isUserOnline(user._id.toString()),
+      }))
+      .filter((user) => !onlineUserIds.has(user.userId))
+
+    return [...onlineUsers, ...otherUsers]
   }
 
   // lazy expiry: no cron, so stale invites are closed when someone touches them
