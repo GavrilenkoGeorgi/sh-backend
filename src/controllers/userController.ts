@@ -4,7 +4,10 @@ import userService from '../services/userService'
 import type { ReqWithUserData } from '../types/interfaces'
 import { accessCookieMaxAge, refreshCookieMaxAge } from '../constants'
 
-const isProd = process.env.NODE_ENV === 'production'
+// a deployed frontend is on another site (https), so cookies must be SameSite=None; Secure.
+// derived from CLIENT_URL instead of NODE_ENV, as staging does not run with NODE_ENV=production
+const isCrossSiteClient =
+  process.env.CLIENT_URL?.startsWith('https://') ?? false
 
 const cookieOptions: {
   httpOnly: boolean
@@ -12,8 +15,8 @@ const cookieOptions: {
   secure: boolean
 } = {
   httpOnly: true,
-  sameSite: isProd ? 'none' : 'lax',
-  secure: isProd,
+  sameSite: isCrossSiteClient ? 'none' : 'lax',
+  secure: isCrossSiteClient,
 }
 
 class UserController {
