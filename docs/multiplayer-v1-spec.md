@@ -202,8 +202,12 @@ Payload:
 interface InviteReceivedPayload {
   inviteId: string
   fromUser: BasicUser
+  // ISO string, absent for legacy invites without expiry
+  expiresAt?: string
 }
 ```
+
+Recipients that are offline when the invite is sent do not get this event; they receive a web push (`POST /push/subscribe`) and load pending invites via `GET /multiplayer/invites/incoming`.
 
 ### Client -> Server
 
@@ -992,6 +996,27 @@ Returns:
 ```ts
 {
   users: OnlineUser[]
+}
+```
+
+## GET `/multiplayer/users/invitable`
+
+Auth required. Lets the lobby invite users who are offline (no socket, so absent from `presence:online-users`).
+
+Query:
+
+- `search` (optional): name prefix, case-insensitive, 2-50 characters
+
+Returns currently online users (excluding the requester) plus, when `search` is set, up to 20 activated users whose name starts with it:
+
+```ts
+{
+  users: {
+    userId: string
+    username: string
+    online: boolean
+  }
+  ;[]
 }
 ```
 

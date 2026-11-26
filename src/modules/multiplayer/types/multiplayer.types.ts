@@ -47,6 +47,12 @@ export interface InviteStatusPayload {
 }
 
 // rest bootstrap payloads
+export interface InvitableUser {
+  userId: string
+  username: string
+  online: boolean
+}
+
 export interface OutgoingInvitePayload {
   inviteId: string
   toUser: BasicUser

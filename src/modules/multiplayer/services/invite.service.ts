@@ -1,13 +1,22 @@
 import Invite, { type InviteDocument } from '../models/Invite'
 import User from '../../../models/userModel'
 import { INVITE_TTL_MS } from '../../../constants/invite'
+import { INVITABLE_SEARCH_MIN_LENGTH } from '../../../schemas/invite.schema'
 import { presenceService } from '../../../socket/services/presence.service'
 
 import type {
+  InvitableUser,
   InviteReceivedPayload,
   OutgoingInvitePayload,
   InviteStatusPayload,
 } from '../types/multiplayer.types'
+
+const INVITABLE_SEARCH_LIMIT = 20
+
+// user input goes into a regex, so special characters must be literal
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
 // pending invites without expiresAt predate expiry and never expire
 function buildNotExpiredFilter(now: Date) {
@@ -194,6 +203,51 @@ class InviteService {
         username: usernamesByUserId.get(invite.toUserId) ?? 'Unknown',
       },
     }))
+  }
+
+  // online users are always listed; a search adds registered users matching the name prefix,
+  // so offline users can still be invited (they get a web push)
+  async getInvitableUsers(
+    userId: string,
+    search?: string,
+  ): Promise<InvitableUser[]> {
+    const usersById = new Map<string, InvitableUser>()
+
+    for (const onlineUser of presenceService.getOnlineUsers()) {
+      if (onlineUser.userId !== userId) {
+        usersById.set(onlineUser.userId, { ...onlineUser, online: true })
+      }
+    }
+
+    const searchPrefix = search?.trim()
+
+    if (searchPrefix && searchPrefix.length >= INVITABLE_SEARCH_MIN_LENGTH) {
+      const matchedUsers = await User.find({
+        _id: { $ne: userId },
+        isActivated: true,
+        name: {
+          $regex: `^${escapeRegex(searchPrefix)}`,
+          $options: 'i',
+        },
+      })
+        .select('name')
+        .sort({ name: 1 })
+        .limit(INVITABLE_SEARCH_LIMIT)
+        .lean()
+
+      for (const matchedUser of matchedUsers) {
+        const matchedUserId = matchedUser._id.toString()
+        usersById.set(matchedUserId, {
+          userId: matchedUserId,
+          username: matchedUser.name,
+          online: presenceService.isUserOnline(matchedUserId),
+        })
+      }
+    }
+
+    return Array.from(usersById.values()).sort((firstUser, secondUser) =>
+      firstUser.username.localeCompare(secondUser.username),
+    )
   }
 
   // lazy expiry: no cron, so stale invites are closed when someone touches them

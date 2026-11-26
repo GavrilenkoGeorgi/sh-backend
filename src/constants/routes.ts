@@ -25,6 +25,7 @@ export const MULTIPLAYER_ROUTES = {
   INCOMING_INVITES: '/invites/incoming',
   OUTGOING_INVITES: '/invites/outgoing',
   DECLINE_INVITE: '/invites/:inviteId/decline',
+  INVITABLE_USERS: '/users/invitable',
   RESULTS: '/results',
 } as const
 

@@ -74,6 +74,28 @@ class MultiplayerController {
     }
   }
 
+  async getInvitableUsers(
+    req: ReqWithUserData,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      if (!req.user?.id) {
+        return res.sendStatus(401)
+      }
+
+      // already validated by invitableUsersSchema
+      const { search } = req.query
+      const users = await inviteService.getInvitableUsers(
+        req.user.id,
+        typeof search === 'string' ? search : undefined,
+      )
+      return res.json({ users })
+    } catch (error) {
+      next(error)
+    }
+  }
+
   async declineInvite(req: ReqWithUserData, res: Response, next: NextFunction) {
     try {
       if (!req.user?.id) {
