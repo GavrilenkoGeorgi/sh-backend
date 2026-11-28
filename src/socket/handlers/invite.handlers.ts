@@ -3,6 +3,7 @@ import { Server, type Socket } from 'socket.io'
 import { type SocketUser } from '../../modules/multiplayer/types/multiplayer.types'
 import { inviteService } from '../../modules/multiplayer/services/invite.service'
 import { gameService } from '../../modules/multiplayer/services/game.service'
+import { pushService } from '../../modules/multiplayer/services/push.service'
 import { presenceService } from '../services/presence.service'
 
 export function registerInviteHandlers(io: Server, socket: Socket): void {
@@ -34,6 +35,11 @@ export function registerInviteHandlers(io: Server, socket: Socket): void {
       for (const socketId of targetSocketIds) {
         io.to(socketId).emit('invite:received', inviteReceived)
       }
+
+      // push goes to every recipient, online or not: a backgrounded PWA often keeps its
+      // socket open, so presence can't tell whether the user sees the toast. the service
+      // worker skips the notification when the app is visible. not awaited so the ack isn't delayed
+      void pushService.sendInvitePush(toUserId, inviteReceived)
 
       if (typeof callback === 'function') {
         callback({ success: true, inviteId: inviteReceived.inviteId })
@@ -153,6 +159,7 @@ export function registerInviteHandlers(io: Server, socket: Socket): void {
   })
 }
 
+// TODO: emitToUser is duplicated in presence.handlers.ts and multiplayerController.ts, extract a shared helper into src/socket/services/
 // emit an event to all active sockets of a given user
 function emitToUser(
   io: Server,

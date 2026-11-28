@@ -13,6 +13,7 @@ import { notFound, errorHandler } from './middleware/errorMiddleware'
 import userRoutes from './routes/userRoutes'
 import gameRoutes from './routes/gameRoutes'
 import multiplayerRoutes from './routes/multiplayerRoutes'
+import pushRoutes from './routes/pushRoutes'
 import { API_BASE_PATHS } from './constants/routes'
 import { initializeSocket } from './socket'
 
@@ -37,6 +38,7 @@ app.use(
 app.use(API_BASE_PATHS.USERS, userRoutes)
 app.use(API_BASE_PATHS.GAME, gameRoutes)
 app.use(API_BASE_PATHS.MULTIPLAYER, multiplayerRoutes)
+app.use(API_BASE_PATHS.PUSH, pushRoutes)
 
 app.use(notFound)
 app.use(errorHandler)

@@ -1,12 +1,29 @@
-import Invite from '../models/Invite'
+import Invite, { type InviteDocument } from '../models/Invite'
 import User from '../../../models/userModel'
+import { INVITE_TTL_MS } from '../../../constants/invite'
+import { INVITABLE_SEARCH_MIN_LENGTH } from '../../../schemas/invite.schema'
 import { presenceService } from '../../../socket/services/presence.service'
 
 import type {
+  InvitableUser,
   InviteReceivedPayload,
   OutgoingInvitePayload,
   InviteStatusPayload,
 } from '../types/multiplayer.types'
+
+const INVITABLE_USERS_LIMIT = 20
+
+// user input goes into a regex, so special characters must be literal
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+// pending invites without expiresAt predate expiry and never expire
+function buildNotExpiredFilter(now: Date) {
+  return {
+    $or: [{ expiresAt: { $gt: now } }, { expiresAt: { $exists: false } }],
+  }
+}
 
 class InviteService {
   async sendInvite(
@@ -22,9 +39,18 @@ class InviteService {
       throw new Error('Target user does not exist')
     }
 
-    if (!presenceService.isUserOnline(toUserId)) {
-      throw new Error('Target user is not online')
-    }
+    // expired invites must not block a new invite between the same users
+    await Invite.updateMany(
+      {
+        status: 'pending',
+        expiresAt: { $lte: new Date() },
+        $or: [
+          { fromUserId, toUserId },
+          { fromUserId: toUserId, toUserId: fromUserId },
+        ],
+      },
+      { status: 'expired' },
+    )
 
     const existingPendingInvite = await Invite.findOne({
       status: 'pending',
@@ -38,7 +64,11 @@ class InviteService {
       throw new Error('A pending invite already exists between these users')
     }
 
-    const invite = await Invite.create({ fromUserId, toUserId })
+    const invite = await Invite.create({
+      fromUserId,
+      toUserId,
+      expiresAt: new Date(Date.now() + INVITE_TTL_MS),
+    })
 
     const senderUser = await User.findById(fromUserId).select('name')
 
@@ -48,6 +78,7 @@ class InviteService {
         id: fromUserId,
         username: senderUser?.name ?? 'Unknown',
       },
+      expiresAt: invite.expiresAt?.toISOString(),
     }
   }
 
@@ -67,6 +98,8 @@ class InviteService {
     if (invite.toUserId !== acceptingUserId) {
       throw new Error('Only the invite recipient can accept')
     }
+
+    await this.expireIfOutdated(invite)
 
     // both users must still be online
     if (!presenceService.isUserOnline(invite.fromUserId)) {
@@ -106,6 +139,8 @@ class InviteService {
       throw new Error('Only the invite recipient can decline')
     }
 
+    await this.expireIfOutdated(invite)
+
     invite.status = 'declined'
     await invite.save()
 
@@ -123,8 +158,9 @@ class InviteService {
     const incomingInvites = await Invite.find({
       toUserId: userId,
       status: 'pending',
+      ...buildNotExpiredFilter(new Date()),
     })
-      .select('_id fromUserId createdAt')
+      .select('_id fromUserId createdAt expiresAt')
       .sort({ createdAt: -1 })
 
     const fromUserIds = Array.from(
@@ -139,6 +175,7 @@ class InviteService {
         id: invite.fromUserId,
         username: usernamesByUserId.get(invite.fromUserId) ?? 'Unknown',
       },
+      expiresAt: invite.expiresAt?.toISOString(),
     }))
   }
 
@@ -148,6 +185,7 @@ class InviteService {
     const outgoingInvites = await Invite.find({
       fromUserId: userId,
       status: 'pending',
+      ...buildNotExpiredFilter(new Date()),
     })
       .select('_id toUserId createdAt')
       .sort({ createdAt: -1 })
@@ -165,6 +203,64 @@ class InviteService {
         username: usernamesByUserId.get(invite.toUserId) ?? 'Unknown',
       },
     }))
+  }
+
+  async recordLastSeen(userId: string): Promise<void> {
+    await User.updateOne({ _id: userId }, { lastSeenAt: new Date() })
+  }
+
+  // online users come first, followed by registered users so offline ones can still be
+  // invited (they get a web push): the ones matching the search prefix, or the most
+  // recently seen ones when there is no search
+  async getInvitableUsers(
+    userId: string,
+    search?: string,
+  ): Promise<InvitableUser[]> {
+    const onlineUsers: InvitableUser[] = presenceService
+      .getOnlineUsers()
+      .filter((onlineUser) => onlineUser.userId !== userId)
+      .map((onlineUser) => ({ ...onlineUser, online: true }))
+
+    const searchPrefix = search?.trim()
+    const hasSearch =
+      searchPrefix !== undefined &&
+      searchPrefix.length >= INVITABLE_SEARCH_MIN_LENGTH
+
+    const users = await User.find({
+      _id: { $ne: userId },
+      isActivated: true,
+      ...(hasSearch && {
+        name: { $regex: `^${escapeRegex(searchPrefix)}`, $options: 'i' },
+      }),
+    })
+      .select('name')
+      // users without lastSeenAt sort last, newest registrations first
+      .sort(hasSearch ? { name: 1 } : { lastSeenAt: -1, createdAt: -1 })
+      .limit(INVITABLE_USERS_LIMIT)
+      .lean()
+
+    const onlineUserIds = new Set(onlineUsers.map((user) => user.userId))
+
+    const otherUsers: InvitableUser[] = users
+      .map((user) => ({
+        userId: user._id.toString(),
+        username: user.name,
+        online: presenceService.isUserOnline(user._id.toString()),
+      }))
+      .filter((user) => !onlineUserIds.has(user.userId))
+
+    return [...onlineUsers, ...otherUsers]
+  }
+
+  // lazy expiry: no cron, so stale invites are closed when someone touches them
+  private async expireIfOutdated(invite: InviteDocument): Promise<void> {
+    if (!invite.expiresAt || invite.expiresAt > new Date()) {
+      return
+    }
+
+    invite.status = 'expired'
+    await invite.save()
+    throw new Error('Invite has expired')
   }
 
   private async getUsernamesByUserIds(

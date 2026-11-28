@@ -133,11 +133,7 @@ type MultiplayerGameStatus = 'active' | 'finished' | 'abandoned'
 
 ```ts
 type InviteStatus =
-  | 'pending'
-  | 'accepted'
-  | 'declined'
-  | 'cancelled'
-  | 'expired'
+  'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired'
 ```
 
 ## Game end reason
@@ -206,8 +202,12 @@ Payload:
 interface InviteReceivedPayload {
   inviteId: string
   fromUser: BasicUser
+  // ISO string, absent for legacy invites without expiry
+  expiresAt?: string
 }
 ```
+
+Recipients that are offline when the invite is sent do not get this event; they receive a web push (`POST /push/subscribe`) and load pending invites via `GET /multiplayer/invites/incoming`.
 
 ### Client -> Server
 
@@ -366,12 +366,7 @@ Do NOT rename these keys in V1.
 
 ```ts
 type SchoolCombination =
-  | 'ones'
-  | 'twos'
-  | 'threes'
-  | 'fours'
-  | 'fives'
-  | 'sixes'
+  'ones' | 'twos' | 'threes' | 'fours' | 'fives' | 'sixes'
 
 type GameCombination =
   | 'pair'
@@ -556,7 +551,7 @@ On `invite:send`:
 
 - `toUserId` must exist
 - `toUserId` must not equal current user ID
-- target user must be online
+- target user may be offline; they receive a web push if subscribed (sent to online users too, as a backgrounded PWA can keep its socket open; the service worker skips it while the app is visible)
 - target user must not already be in an active multiplayer game
 - current user must not already be in an active multiplayer game
 - there must not already be a pending invite between these two users in either direction
@@ -1001,6 +996,27 @@ Returns:
 ```ts
 {
   users: OnlineUser[]
+}
+```
+
+## GET `/multiplayer/users/invitable`
+
+Auth required. Lets the lobby invite users who are offline (no socket, so absent from `presence:online-users`).
+
+Query:
+
+- `search` (optional): name prefix, case-insensitive, 2-50 characters
+
+Returns currently online users (excluding the requester) first, then registered activated users: those whose name starts with `search` (by name), or without `search` the most recently seen ones (by `lastSeenAt`, then registration date). At most 20 registered users are read from the database:
+
+```ts
+{
+  users: {
+    userId: string
+    username: string
+    online: boolean
+  }
+  ;[]
 }
 ```
 
